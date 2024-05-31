@@ -1,0 +1,8 @@
+*.log
+*.sql
+*.sql.gz
+.DS_Store
+*.bak
+*.swp
+*.idea/
+*.vscode/
