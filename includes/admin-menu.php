@@ -1,4 +1,5 @@
 <?php
+// File: includes/admin-menu.php
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -7,6 +8,7 @@ if (!defined('ABSPATH')) {
 class Dummy_Content_Admin_Menu {
     public function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
     }
 
     public function add_admin_menu() {
@@ -16,7 +18,7 @@ class Dummy_Content_Admin_Menu {
             'manage_options', // Capability
             'dummy-content', // Menu slug
             array($this, 'dummy_content_page'), // Callback function
-            'dashicons-admin-generic', // Icon URL
+            'data:image/svg+xml;base64,' . base64_encode($this->get_svg_icon()), // Icon URL
             6 // Position
         );
 
@@ -46,6 +48,18 @@ class Dummy_Content_Admin_Menu {
             'dummy-content-settings',
             array($this, 'dummy_content_settings_page')
         );
+    }
+
+    private function get_svg_icon() {
+        $svg_path = plugin_dir_path(__FILE__) . '../assets/images/dummy-content-icon.svg';
+        if (file_exists($svg_path)) {
+            return file_get_contents($svg_path);
+        }
+        return '';
+    }
+
+    public function enqueue_admin_styles() {
+        wp_enqueue_style('dummy-content-admin-style', plugin_dir_url(__FILE__) . '../assets/css/admin-style.css');
     }
 
     public function dummy_content_page() {
