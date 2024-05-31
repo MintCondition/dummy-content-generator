@@ -2,7 +2,7 @@
 /*
 Plugin Name: Stratifi Dummy Content Generator
 Description: A plugin to create dummy content for WordPress sites in Development
-Version: 0.0.2
+Version: 0.0.3
 Author: Brian Wood (Stratifi Creative)
 */
 
@@ -15,6 +15,7 @@ define('SITE_CONFIG_API_ROUTE', '/data');
 define('SITE_CONFIG_API_TEST_ROUTE', '/test');
 
 require_once plugin_dir_path(__FILE__) . 'includes/update-checker.php';
+require_once plugin_dir_path(__FILE__) . 'includes/admin-menu.php';
 
 new GitHub_Updater(__FILE__, 'MintCondition', 'dummy-content-generator');
 

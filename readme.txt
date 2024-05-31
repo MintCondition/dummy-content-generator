@@ -3,7 +3,7 @@ Contributors: Brian Wood
 Tags: WordPress, plugin, dummy content
 Requires at least: 5.0
 Tested up to: 6.0
-Stable tag: 0.0.2
+Stable tag: 0.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,4 +16,5 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
+0.0.2 - Adding Admin Pages
 0.0.1 - Initial commit with updater functionality.
