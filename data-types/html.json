@@ -1,0 +1,32 @@
+{
+  "label": "HTML",
+  "generators": [
+    {
+      "class": "HtmlGenerator",
+      "label": "HTML Snippet",
+      "parameters": {
+        "length": {
+          "type": "select",
+          "label": "HTML Length",
+          "class": "html-length",
+          "instructions": "Select the length of the HTML snippet.",
+          "options": ["short", "medium", "long"]
+        },
+        "tags": {
+          "type": "checkbox",
+          "label": "HTML Tags",
+          "class": "html-tags",
+          "instructions": "Select the HTML tags to include.",
+          "options": ["<p>", "<div>", "<span>", "<a>", "<ul>", "<ol>", "<li>"]
+        },
+        "custom_css": {
+          "type": "textarea",
+          "label": "Custom CSS",
+          "class": "custom-css",
+          "instructions": "Optional custom CSS to include.",
+          "placeholder": "Enter custom CSS here..."
+        }
+      }
+    }
+  ]
+}

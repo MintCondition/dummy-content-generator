@@ -1,5 +1,5 @@
 {
-  "label": "Short Text",
+  "label": "Long Text",
   "generators": [
     {
       "class": "LoremTextGenerator",
@@ -23,6 +23,12 @@
           "label": "Suffix",
           "class": "text-suffix",
           "instructions": "Optional text to add at the end."
+        },
+        "paragraph_count": {
+          "type": "number",
+          "label": "Paragraph Count",
+          "class": "paragraph-count",
+          "instructions": "Number of paragraphs to generate."
         }
       }
     }

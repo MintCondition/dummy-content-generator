@@ -5,13 +5,37 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+// Ensure the DataGeneratorInterface is included
+require_once plugin_dir_path(__FILE__) . '../includes/data-generator-interface.php';
+
 class LoremTextGenerator implements DataGeneratorInterface {
     public static function getParameters() {
         return [
-            'length' => ['short', 'medium', 'long'],
-            'prefix' => '',
-            'suffix' => '',
-            'paragraph_count' => 1 // Default to 1 paragraph if not specified
+            'length' => [
+                'type' => 'select',
+                'label' => 'Text Length',
+                'class' => 'text-length',
+                'instructions' => 'Select the length of the text.',
+                'options' => ['short', 'medium', 'long']
+            ],
+            'prefix' => [
+                'type' => 'text',
+                'label' => 'Prefix',
+                'class' => 'text-prefix',
+                'instructions' => 'Optional text to add at the beginning.'
+            ],
+            'suffix' => [
+                'type' => 'text',
+                'label' => 'Suffix',
+                'class' => 'text-suffix',
+                'instructions' => 'Optional text to add at the end.'
+            ],
+            'paragraph_count' => [
+                'type' => 'number',
+                'label' => 'Paragraph Count',
+                'class' => 'paragraph-count',
+                'instructions' => 'Number of paragraphs to generate.'
+            ]
         ];
     }
 
