@@ -4,3 +4,9 @@
   height: 20px;
   fill: currentColor;
 }
+
+.pluginrow {
+  width: 50px;
+  height: auto;
+  margin-right: 16px;
+}

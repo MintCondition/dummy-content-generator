@@ -1,0 +1,12 @@
+{
+  "label": "Short Text",
+  "generators": [
+    {
+      "class": "LoremTextGenerator",
+      "label": "Lorem Ipsum",
+      "parameters": {
+        "length": ["short", "medium", "long"]
+      }
+    }
+  ]
+}
