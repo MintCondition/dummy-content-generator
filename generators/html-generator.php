@@ -4,7 +4,8 @@
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
-require_once plugin_dir_path(__FILE__) . '../includes/data-generator-interface.php'; // Include the DataGeneratorInterface
+
+require_once plugin_dir_path(__FILE__) . '../includes/data-generator-interface.php';
 
 class HtmlGenerator implements DataGeneratorInterface {
     public static function getParameters() {
@@ -64,7 +65,7 @@ class HtmlGenerator implements DataGeneratorInterface {
 
         // Wrap the content with the selected tags
         foreach ($tags as $tag) {
-            $content = htmlspecialchars($tag) . "{$content}" . htmlspecialchars(str_replace('<', '</', $tag));
+            $content = "<{$tag}>{$content}</{$tag}>";
         }
 
         return $content;

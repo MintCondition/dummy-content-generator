@@ -9,6 +9,11 @@ class Create_Dummy_Content_Page {
     public function display_page() {
         ?>
         <div class="wrap">
+            <!-- Working Indicator -->
+            <div id="working-indicator" style="display: none;">
+                <div class="dc-overlay"></div>    
+                <div class="dc-center-box"><p>Working...</p></div>
+            </div>    
             <h1>Create Dummy Content</h1>
             <div id="step-1">
                 <h2>Step 1: Select Post Type</h2>
@@ -43,10 +48,20 @@ class Create_Dummy_Content_Page {
             </div>
             <div id="step-3" style="display:none;">
                 <h2>Step 3: Review and Generate</h2>
+                <div id="post-review-content"></div>
                 <button id="generate-dummy-content" class="button button-primary">Create Dummy Content</button>
+                <button id="cancel-generation" class="button">Cancel</button>
             </div>
         </div>
-        <script src="<?php echo plugin_dir_url(__FILE__) . 'js/dummy-content-admin.js'; ?>"></script>
+        <script>
+            var dummyContent = {
+                ajax_url: "<?php echo admin_url('admin-ajax.php'); ?>",
+                nonce: "<?php echo wp_create_nonce('create_dummy_content'); ?>",
+                data_types: <?php echo json_encode(load_data_types()); ?>,
+                plugin_url: "<?php echo plugin_dir_url(__FILE__) . '../'; ?>"
+            };
+        </script>
+        <script src="<?php echo plugin_dir_url(__FILE__) . '../js/dummy-content-admin.js'; ?>"></script>
         <?php
     }
 }

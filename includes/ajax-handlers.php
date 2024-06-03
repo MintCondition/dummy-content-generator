@@ -5,9 +5,8 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-require_once plugin_dir_path(__FILE__) . 'utils.php'; // Include the utils file
-require_once plugin_dir_path(__FILE__) . 'data-generator-interface.php'; // Include the DataGeneratorInterface
-
+require_once plugin_dir_path(__FILE__) . 'utils.php';
+require_once plugin_dir_path(__FILE__) . 'data-generator-interface.php';
 
 // Load data types configuration
 $data_types = load_data_types();
@@ -55,7 +54,8 @@ function handle_preview_dummy_content() {
 
             if (isset($data_types[$dataType])) {
                 $generator_class = $data_types[$dataType]['generators'][$generator]['class'];
-                $generator_path = plugin_dir_path(__FILE__) . "../generators/" . strtolower($generator_class) . ".php";
+                $generator_file = $data_types[$dataType]['generators'][$generator]['file'];
+                $generator_path = plugin_dir_path(__FILE__) . "../generators/" . $generator_file;
                 if (file_exists($generator_path)) {
                     require_once $generator_path;
                     if (class_exists($generator_class)) {

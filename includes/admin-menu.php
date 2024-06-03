@@ -77,7 +77,7 @@ class Dummy_Content_Admin_Menu {
         echo '<h1>Dummy Content</h1>';
         echo '<p>Welcome to the Dummy Content Generator plugin!</p>';
         echo '<a href="' . admin_url('admin.php?page=create-dummy-content') . '" class="button button-primary">Create Dummy Content</a>';
-    }
+            }
 
     public function create_dummy_content_page() {
         $page = new Create_Dummy_Content_Page();

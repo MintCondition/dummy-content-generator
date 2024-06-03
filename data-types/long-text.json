@@ -3,6 +3,7 @@
   "generators": [
     {
       "class": "LoremTextGenerator",
+      "file": "lorem-text-generator.php",
       "label": "Lorem Ipsum",
       "parameters": {
         "length": {

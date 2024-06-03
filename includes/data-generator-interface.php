@@ -1,4 +1,3 @@
-
 <?php
 // File: includes/data-generatorinterface.php
 
