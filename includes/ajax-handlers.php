@@ -5,75 +5,29 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-require_once plugin_dir_path(__FILE__) . 'utils.php';
-require_once plugin_dir_path(__FILE__) . 'data-generator-interface.php';
+add_action('wp_ajax_get_generators', 'get_generators');
+add_action('wp_ajax_get_generator_parameters', 'get_generator_parameters');
 
-// Load data types configuration
-$data_types = load_data_types();
+function get_generators() {
+    check_ajax_referer('create_dummy_content', '_ajax_nonce');
 
-add_action('wp_ajax_get_post_type_fields', 'handle_get_post_type_fields');
-add_action('wp_ajax_nopriv_get_post_type_fields', 'handle_get_post_type_fields'); // If needed for non-logged-in users
+    $data_type = sanitize_text_field($_POST['data_type']);
+    $field = sanitize_text_field($_POST['field']);
 
-function handle_get_post_type_fields() {
-    check_ajax_referer('create_dummy_content', 'nonce');
+    // Fetch generators for the selected data type
+    $generators = array(); // Replace with the actual generators fetching logic
 
-    $post_type = sanitize_text_field($_POST['post_type']);
-    $fields = array();
-
-    if ($post_type) {
-        $post_type_object = get_post_type_object($post_type);
-        if ($post_type_object) {
-            $fields[] = array('label' => 'Title', 'name' => 'title');
-            $fields[] = array('label' => 'Content', 'name' => 'content');
-        }
-    }
-
-    wp_send_json_success($fields);
+    wp_send_json_success(array('generators' => $generators));
 }
 
-add_action('wp_ajax_preview_dummy_content', 'handle_preview_dummy_content');
+function get_generator_parameters() {
+    check_ajax_referer('create_dummy_content', '_ajax_nonce');
 
-function handle_preview_dummy_content() {
-    check_ajax_referer('create_dummy_content', 'nonce');
+    $generator = sanitize_text_field($_POST['generator']);
+    $field = sanitize_text_field($_POST['field']);
 
-    $post_type = sanitize_text_field($_POST['post_type']);
-    $post_count = intval($_POST['post_count']);
-    $fields = $_POST['fields'];
+    // Fetch parameters for the selected generator
+    $parameters_html = ''; // Replace with the actual parameters fetching logic
 
-    $data_types = load_data_types(); // Ensure data types are loaded here
-
-    $preview_data = array();
-
-    for ($i = 0; $i < $post_count; $i++) {
-        $post_preview = array();
-
-        foreach ($fields as $field) {
-            $dataType = $field['dataType'];
-            $generator = $field['generator'];
-            $parameters = $field['parameters'];
-
-            if (isset($data_types[$dataType])) {
-                $generator_class = $data_types[$dataType]['generators'][$generator]['class'];
-                $generator_file = $data_types[$dataType]['generators'][$generator]['file'];
-                $generator_path = plugin_dir_path(__FILE__) . "../generators/" . $generator_file;
-                if (file_exists($generator_path)) {
-                    require_once $generator_path;
-                    if (class_exists($generator_class)) {
-                        $content = call_user_func(array($generator_class, 'generate'), $parameters);
-                        $post_preview[$field['field']] = $content;
-                    } else {
-                        $post_preview[$field['field']] = 'Generator class not found. Class: ' . $generator_class;
-                    }
-                } else {
-                    $post_preview[$field['field']] = 'Generator file not found. Path: ' . $generator_path;
-                }
-            } else {
-                $post_preview[$field['field']] = 'Data type not found. Data type: ' . $dataType;
-            }
-        }
-
-        $preview_data[] = $post_preview;
-    }
-
-    wp_send_json_success($preview_data);
+    wp_send_json_success(array('parameters_html' => $parameters_html));
 }

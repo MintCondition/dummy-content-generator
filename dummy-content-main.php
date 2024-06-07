@@ -1,37 +1,29 @@
 <?php
 /*
 Plugin Name: Stratifi Dummy Content Generator
-Description: A plugin to create dummy content for WordPress sites in Development
-Version: 0.0.3b  
-Author: Brian Wood (Stratifi Creative)
-Author URI: https://stratificreative.com
+Description: A plugin to generate dummy content for WordPress.
+Version: 0.0.3b
+Author: Brian Wood - Stratifi Creative
+License: GPL2
 */
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-require_once plugin_dir_path(__FILE__) . 'includes/update-checker.php';
+// Define the plugin URL
+define('DC_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+// Include necessary files
 require_once plugin_dir_path(__FILE__) . 'includes/admin-menu.php';
-require_once plugin_dir_path(__FILE__) . 'includes/create-dummy-content.php';
-require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
 require_once plugin_dir_path(__FILE__) . 'includes/utils.php';
 
-new GitHub_Updater(__FILE__, 'MintCondition', 'dummy-content-generator');
-
-add_action('admin_enqueue_scripts', 'enqueue_dummy_content_scripts');
-function enqueue_dummy_content_scripts() {
-    wp_enqueue_script('dummy-content-script', plugin_dir_url(__FILE__) . 'js/dummy-content-admin.js', ['jquery'], '1.0', true);
-    wp_localize_script('dummy-content-script', 'dummyContent', [
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('create_dummy_content'),
-        'data_types' => load_data_types(),
-        'base_url' => plugin_dir_url(__FILE__) . 'js/' // Add the plugin URL for script loading
-    ]);
+// Function to print the JavaScript console log for debugging
+function dc_print_console_log() {
+    ?>
+    <script>
+        console.log("DC_PLUGIN_URL: <?php echo DC_PLUGIN_URL; ?>");
+    </script>
+    <?php
 }
-
-add_action('admin_enqueue_scripts', 'enqueue_dummy_content_styles');
-function enqueue_dummy_content_styles() {
-    wp_enqueue_style('dummy-content-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin-style.css');
-}
-?>
+add_action('admin_footer', 'dc_print_console_log');
