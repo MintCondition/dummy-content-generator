@@ -16,7 +16,17 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
-0.5.0 - Version 0.5.0 - 2024-06-09
+0.5.1 - 2024-06-09
+
+### Enhancements:
+
+- Settings now sets all fields to available on activation
+
+### Fixed:
+
+- Settings now saves available fields correctly.
+
+  0.5.0 - Version 0.5.0 - 2024-06-09
 
 Approaching MVP. Currently only tested with posts and 3 fields: Title, Content, and Feat Image.
 

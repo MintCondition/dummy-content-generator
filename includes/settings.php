@@ -1,8 +1,7 @@
 <?php
 // File: includes/settings.php
 // TODO: Make this pretty.
-// TODO: Why isn't this saving field settings? 
-
+// DONE: Why isn't this saving field settings?
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -11,10 +10,11 @@ if (!defined('ABSPATH')) {
 class Dummy_Content_Settings_Page {
     public function __construct() {
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_menu', array($this, 'add_settings_page'));
     }
 
     public function register_settings() {
-        register_setting('dummy_content_settings', 'dummy_content_fields');
+        register_setting('dummy_content_settings', 'dummy_content_fields', array($this, 'sanitize_fields'));
         register_setting('dummy_content_settings', 'dummy_content_temp_dir');
 
         add_settings_section(
@@ -49,16 +49,28 @@ class Dummy_Content_Settings_Page {
         );
     }
 
+    public function sanitize_fields($fields) {
+        $sanitized_fields = array();
+        foreach ($fields as $post_type => $types) {
+            $sanitized_fields[$post_type] = array();
+            foreach ($types as $type => $type_fields) {
+                $sanitized_fields[$post_type][$type] = array_map('sanitize_text_field', $type_fields);
+            }
+        }
+        return $sanitized_fields;
+    }
+
     public function fields_callback() {
         $post_types = get_post_types(array('public' => true), 'objects');
+        $selected_fields = get_option('dummy_content_fields', array());
+
         ?>
         <div id="accordion">
             <?php foreach ($post_types as $post_type): ?>
                 <h3><?php echo esc_html($post_type->label); ?></h3>
                 <div>
-                    <?php 
-                    $fields = get_dynamic_post_fields($post_type->name); 
-                    $selected_fields = get_option('dummy_content_fields', array());
+                    <?php
+                    $fields = get_dynamic_post_fields($post_type->name);
                     $selected_fields_for_type = isset($selected_fields[$post_type->name]) ? $selected_fields[$post_type->name] : array();
                     foreach ($fields as $type => $type_fields) {
                         echo '<h4>' . ucfirst($type) . '</h4>';
@@ -179,7 +191,7 @@ class Dummy_Content_Settings_Page {
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Dummy Content Generator Settings', 'text-domain'); ?></h1>
-            <form method="post" action="" id="dummy_content_form">
+            <form method="post" action="options.php" id="dummy_content_form">
                 <?php
                 settings_fields('dummy_content_settings');
                 do_settings_sections('dummy_content_settings');
@@ -188,6 +200,16 @@ class Dummy_Content_Settings_Page {
             </form>
         </div>
         <?php
+    }
+
+    public function add_settings_page() {
+        add_options_page(
+            __('Dummy Content Settings', 'text-domain'),
+            __('Dummy Content', 'text-domain'),
+            'manage_options',
+            'dummy-content-settings',
+            array($this, 'display_page')
+        );
     }
 }
 
