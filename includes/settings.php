@@ -1,6 +1,8 @@
 <?php
 // File: includes/settings.php
 // TODO: Make this pretty.
+// TODO: Why isn't this saving field settings? 
+
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
