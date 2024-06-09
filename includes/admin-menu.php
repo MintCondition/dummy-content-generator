@@ -8,6 +8,7 @@ if (!defined('ABSPATH')) {
 require_once plugin_dir_path(__FILE__) . 'utils.php';
 require_once plugin_dir_path(__FILE__) . 'create-dummy-content.php';
 require_once plugin_dir_path(__FILE__) . 'settings.php';
+require_once plugin_dir_path(__FILE__) . 'testing.php';
 
 class Dummy_Content_Admin_Menu {
     public function __construct() {
@@ -42,6 +43,15 @@ class Dummy_Content_Admin_Menu {
             'manage_options',
             'dummy-content-settings',
             array($this, 'dummy_content_settings_page')
+        );
+
+        add_submenu_page(
+            'dummy-content',
+            'Testing',
+            'Testing',
+            'manage_options',
+            'dummy-content-testing',
+            array($this, 'dummy_content_testing_page')
         );
 
         add_submenu_page(
@@ -96,7 +106,11 @@ class Dummy_Content_Admin_Menu {
         $settings_page = new Dummy_Content_Settings_Page();
         $settings_page->display_page();
     }
+
+    public function dummy_content_testing_page() {
+        $testing_page = new Dummy_Content_Testing_Page();
+        $testing_page->display_page();
+    }
 }
 
 new Dummy_Content_Admin_Menu();
-?>

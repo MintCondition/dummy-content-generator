@@ -30,6 +30,13 @@
           "label": "Paragraph Count",
           "class": "paragraph-count",
           "instructions": "Number of paragraphs to generate."
+        },
+        "format": {
+          "type": "select",
+          "label": "Format",
+          "class": "text-format",
+          "instructions": "Select the format of the text.",
+          "options": ["plaintext", "html"]
         }
       }
     }

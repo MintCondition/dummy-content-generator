@@ -9,11 +9,6 @@ $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type'
 $num_posts = isset($_POST['num_posts']) ? intval($_POST['num_posts']) : 1;
 $fields = isset($_POST['fields']) ? $_POST['fields'] : array();
 $data_types = load_data_types();
-
-// Log the data received in step 3
-error_log("Step 3 - Post Type: $post_type");
-error_log("Step 3 - Number of Posts: $num_posts");
-error_log("Step 3 - Fields: " . implode(', ', $fields));
 ?>
 
 <div class="wrap">

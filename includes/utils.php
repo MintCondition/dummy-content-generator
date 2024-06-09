@@ -52,8 +52,13 @@ function get_dynamic_post_fields($post_type) {
 
     // Get ACF fields for the post type
     if (function_exists('acf_get_field_groups') && function_exists('acf_get_fields')) {
-        $acf_fields = get_acf_fields($post_type);
-        $fields['acf'] = $acf_fields;
+        $field_groups = acf_get_field_groups(array('post_type' => $post_type));
+        foreach ($field_groups as $group) {
+            $acf_fields = acf_get_fields($group['ID']);
+            foreach ($acf_fields as $acf_field) {
+                $fields['acf'][$acf_field['name']] = $acf_field['label'];
+            }
+        }
     }
 
     return $fields;
@@ -130,5 +135,71 @@ function get_acf_fields($post_type) {
     }
 
     return $acf_fields;
+}
+
+function dcg_create_temp_dir($dir_name) {
+    $upload_dir = wp_upload_dir();
+    $dir_path = $upload_dir['basedir'] . '/' . $dir_name;
+    if (!file_exists($dir_path)) {
+        wp_mkdir_p($dir_path);
+    }
+}
+
+function dcg_delete_directory($dir) {
+    if (!file_exists($dir)) {
+        return true;
+    }
+
+    if (!is_dir($dir)) {
+        return unlink($dir);
+    }
+
+    foreach (scandir($dir) as $item) {
+        if ($item == '.' || $item == '..') {
+            continue;
+        }
+
+        if (!dcg_delete_directory($dir . DIRECTORY_SEPARATOR . $item)) {
+            return false;
+        }
+    }
+
+    return rmdir($dir);
+}
+
+function dcg_get_temp_dir_status() {
+    $temp_dir = get_option('dummy_content_temp_dir', 'dummy-content-temp');
+    $upload_dir = wp_upload_dir();
+    $temp_dir_path = $upload_dir['basedir'] . '/' . $temp_dir;
+
+    $status = array(
+        'path' => $temp_dir_path,
+        'file_count' => 0,
+        'total_size' => 0,
+        'is_writable' => is_writable($temp_dir_path),
+    );
+
+    if (is_dir($temp_dir_path)) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($temp_dir_path, RecursiveDirectoryIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            $status['file_count']++;
+            $status['total_size'] += $file->getSize();
+        }
+    }
+
+    return $status;
+}
+
+
+function dcg_get_temp_directory() {
+    $temp_dir_name = get_option('dummy_content_temp_dir', 'dummy-content-temp'); // Get the temp directory name from settings
+    $upload_dir = wp_upload_dir();
+    $temp_dir = $upload_dir['basedir'] . '/' . $temp_dir_name;
+
+    if (!file_exists($temp_dir)) {
+        wp_mkdir_p($temp_dir);
+    }
+
+    return $temp_dir;
 }
 

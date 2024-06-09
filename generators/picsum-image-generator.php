@@ -1,6 +1,6 @@
 <?php
-// File: generators/unsplash-image-generator.php
-// Class: UnsplashImageGenerator
+// File: generators/picsum-image-generator.php
+// Class: PicsumImageGenerator
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -8,15 +8,15 @@ if (!defined('ABSPATH')) {
 
 require_once plugin_dir_path(__FILE__) . '../includes/data-generator-interface.php';
 
-class UnsplashImageGenerator implements DataGeneratorInterface {
+class PicsumImageGenerator implements DataGeneratorInterface {
     public static function getParameters() {
         return [
             'choice' => [
                 'type' => 'select',
                 'label' => 'Image Choice',
                 'class' => 'image-choice',
-                'instructions' => 'Select between random or search images.',
-                'options' => ['Random', 'Search']
+                'instructions' => 'Select between random or specific images.',
+                'options' => ['Random', 'Grayscale', 'Blur', 'Seed']
             ],
             'size' => [
                 'type' => 'select',
@@ -37,11 +37,24 @@ class UnsplashImageGenerator implements DataGeneratorInterface {
                 'class' => 'custom-height',
                 'instructions' => 'Specify custom height if Custom size is selected.'
             ],
-            'query' => [
+            'seed' => [
                 'type' => 'text',
-                'label' => 'Search Query',
-                'class' => 'search-query',
-                'instructions' => 'Optional search term for images.'
+                'label' => 'Seed',
+                'class' => 'seed',
+                'instructions' => 'Optional seed for specific images.'
+            ],
+            'blur' => [
+                'type' => 'number',
+                'label' => 'Blur Level',
+                'class' => 'blur',
+                'instructions' => 'Optional blur level (1-10).'
+            ],
+            'grayscale' => [
+                'type' => 'select',
+                'label' => 'Grayscale',
+                'class' => 'grayscale',
+                'instructions' => 'Apply grayscale filter.',
+                'options' => ['No', 'Yes']
             ]
         ];
     }
@@ -51,31 +64,39 @@ class UnsplashImageGenerator implements DataGeneratorInterface {
         $size = isset($params['size']) ? $params['size'] : 'Medium (800x600)';
         $customWidth = isset($params['custom_width']) ? $params['custom_width'] : null;
         $customHeight = isset($params['custom_height']) ? $params['custom_height'] : null;
-        $query = isset($params['query']) ? $params['query'] : '';
+        $seed = isset($params['seed']) ? $params['seed'] : null;
+        $blur = isset($params['blur']) ? $params['blur'] : null;
+        $grayscale = isset($params['grayscale']) && $params['grayscale'] === 'Yes' ? true : false;
 
-        $url = 'https://source.unsplash.com/';
+        $url = 'https://picsum.photos/';
         $sizeMapping = [
-            'Small (250x250)' => '250x250',
-            'Medium (800x600)' => '800x600',
-            'Large (1920x1080)' => '1920x1080'
+            'Small (250x250)' => '250/250',
+            'Medium (800x600)' => '800/600',
+            'Large (1920x1080)' => '1920/1080'
         ];
 
         if ($size === 'Custom' && $customWidth && $customHeight) {
-            $url .= "{$customWidth}x{$customHeight}";
+            $url .= "{$customWidth}/{$customHeight}";
         } else {
             $url .= $sizeMapping[$size];
         }
 
-        if ($choice === 'Search' && !empty($query)) {
-            $url .= '/?' . urlencode($query);
-        } else {
-            $url .= '/random';
+        if ($choice === 'Seed' && $seed) {
+            $url .= '?seed=' . urlencode($seed);
+        }
+
+        if ($grayscale) {
+            $url .= (strpos($url, '?') === false ? '?' : '&') . 'grayscale';
+        }
+
+        if ($blur) {
+            $url .= (strpos($url, '?') === false ? '?' : '&') . 'blur=' . $blur;
         }
 
         // Log the generated URL
-        error_log("Generated Unsplash URL: $url");
+        error_log("Generated Picsum URL: $url");
 
-        // Save the image to the media library
+        // Save the image to the temp directory
         $image_data = self::fetch_and_save_image($url);
 
         return $image_data;
@@ -86,14 +107,14 @@ class UnsplashImageGenerator implements DataGeneratorInterface {
         $response = wp_remote_get($url);
 
         if (is_wp_error($response)) {
-            error_log("Failed to fetch image from Unsplash: " . $response->get_error_message());
+            error_log("Failed to fetch image from Picsum: " . $response->get_error_message());
             return [
                 'type' => 'pointer',
                 'data_type' => 'image',
                 'content' => [
                     'file_path' => '',
                     'url' => '',
-                    'error' => 'Failed to fetch image from Unsplash: ' . $response->get_error_message()
+                    'error' => 'Failed to fetch image from Picsum: ' . $response->get_error_message()
                 ]
             ];
         }
@@ -102,47 +123,49 @@ class UnsplashImageGenerator implements DataGeneratorInterface {
 
         // Check if the response body is not empty
         if (empty($body)) {
-            error_log("Empty response body from Unsplash");
+            error_log("Empty response body from Picsum");
             return [
                 'type' => 'pointer',
                 'data_type' => 'image',
                 'content' => [
                     'file_path' => '',
                     'url' => '',
-                    'error' => 'Empty response body from Unsplash'
+                    'error' => 'Empty response body from Picsum'
                 ]
             ];
         }
 
         // Create a temporary file in the temp directory
         $temp_dir = dcg_get_temp_directory();
-        $file_path = $temp_dir . '/unsplash-dc-' . uniqid() . '.jpg';
+        $file_path = $temp_dir . '/picsum-dc-' . uniqid() . '.jpg';
 
         // Save the file
         $result = file_put_contents($file_path, $body);
         if ($result === false) {
-            error_log("Failed to save Unsplash image to: $file_path");
+            error_log("Failed to save Picsum image to: $file_path");
             return [
                 'type' => 'pointer',
                 'data_type' => 'image',
                 'content' => [
                     'file_path' => '',
                     'url' => '',
-                    'error' => 'Failed to save Unsplash image to: ' . $file_path
+                    'error' => 'Failed to save Picsum image to: ' . $file_path
                 ]
             ];
         }
 
         // Log the file path
-        error_log("Saved Unsplash image to: $file_path");
+        error_log("Saved Picsum image to: $file_path");
 
         // Return the file path and URL
+        $upload_dir = wp_upload_dir();
+        $relative_path = str_replace($upload_dir['basedir'], '', $file_path);
         return [
             'type' => 'pointer',
             'data_type' => 'image',
             'content' => [
-                'file_path' => str_replace(WP_CONTENT_DIR, '', $file_path),
-                'url' => content_url(basename($temp_dir) . '/' . basename($file_path))
+                'file_path' => $relative_path,
+                'url' => $upload_dir['baseurl'] . $relative_path
             ]
         ];
     }

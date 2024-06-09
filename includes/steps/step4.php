@@ -1,4 +1,5 @@
 <?php
+
 // File: includes/steps/step4.php
 
 if (!defined('ABSPATH')) {
@@ -12,14 +13,6 @@ $data_types = isset($_POST['data_types']) ? $_POST['data_types'] : array();
 $generators = isset($_POST['generators']) ? $_POST['generators'] : array();
 $parameters = isset($_POST['parameters']) ? $_POST['parameters'] : array();
 
-// Log the data received in step 4
-error_log("Step 4 - Post Type: $post_type");
-error_log("Step 4 - Number of Posts: $num_posts");
-error_log("Step 4 - Fields: " . implode(', ', $fields));
-error_log("Step 4 - Data Types: " . print_r($data_types, true));
-error_log("Step 4 - Generators: " . print_r($generators, true));
-error_log("Step 4 - Parameters: " . print_r($parameters, true));
-
 // Load the data types
 $data_types_list = load_data_types();
 
@@ -30,40 +23,21 @@ function generate_content($generator_class, $generator_file, $params) {
     if (file_exists($generator_file_path)) {
         require_once $generator_file_path;
     } else {
-        error_log("Generator file not found: $generator_file_path");
         return 'Content generation failed (file not found).';
     }
 
     if (class_exists($generator_class)) {
         return call_user_func(array($generator_class, 'generate'), $params);
     } else {
-        error_log("Generator class not found: $generator_class");
         return 'Content generation failed (class not found).';
     }
 }
 
-// Function to download an image and temporarily store it
-function download_image($image_url) {
-    $upload_dir = wp_upload_dir();
-    $image_data = wp_remote_get($image_url);
-    if (is_wp_error($image_data)) {
-        return false;
-    }
-
-    $image_data = wp_remote_retrieve_body($image_data);
-    $unique_key = uniqid();
-    $filename = "unsplash-dc-$unique_key.jpeg";
-    $file_path = $upload_dir['path'] . '/' . $filename;
-
-    if (file_put_contents($file_path, $image_data)) {
-        return array(
-            'url' => $upload_dir['url'] . '/' . $filename,
-            'file_path' => $file_path,
-            'filename' => $filename
-        );
-    }
-
-    return false;
+// Get the temporary directory path
+$temp_dir = dcg_get_temp_directory();
+if (!$temp_dir) {
+    echo '<div class="notice notice-error"><p>Temporary directory could not be created or accessed.</p></div>';
+    return;
 }
 
 // Initialize an array to store generated content
@@ -87,25 +61,29 @@ for ($i = 0; $i < $num_posts; $i++) {
         }
 
         // Generate the content
-        $content = generate_content($generator_class, $generator_file, $field_parameters);
-
-        // If the field is 'post_thumbnail', download and temporarily store the image
-        if ($field == 'post_thumbnail') {
-            $downloaded_image = download_image($content);
-            if ($downloaded_image) {
-                $content = $downloaded_image['url'];
-                // Store the file path for later use in Step 5
-                $post_content['_post_thumbnail_file_path'] = $downloaded_image['file_path'];
-            }
+        $generated_field = generate_content($generator_class, $generator_file, $field_parameters);
+        
+        if (!is_array($generated_field) || !isset($generated_field['type']) || !isset($generated_field['data_type']) || !isset($generated_field['content'])) {
+            echo '<div class="notice notice-error"><p>Invalid Generator Response format.</p></div>';
+            return;
         }
 
-        $post_content[$field] = $content;
+        $post_content[$field] = $generated_field;
     }
-    $generated_content[] = $post_content;
-}
+    
+    $generated_content[] = [
+        'meta_data' => [
+            'generated_by' => wp_get_current_user()->user_login,
+            'generated_at' => current_time('mysql'),
+            'post_type' => $post_type
+        ],
+        'fields' => $post_content
+    ];
 
-// Store the generated content in a transient
-set_transient('dc_generated_content', $generated_content, 60 * 60); // 1 hour
+    // Save JSON to temp directory
+    $json_filename = $temp_dir . '/post-' . ($i + 1) . '.json';
+    file_put_contents($json_filename, json_encode($generated_content[$i]));
+}
 
 ?>
 
@@ -123,6 +101,10 @@ set_transient('dc_generated_content', $generated_content, 60 * 60); // 1 hour
         <input type="hidden" name="parameters" value="<?php echo esc_attr(json_encode($parameters)); ?>">
 
         <?php for ($i = 0; $i < $num_posts; $i++): ?>
+            <?php 
+                $json_filename = $temp_dir . '/post-' . ($i + 1) . '.json';
+                $json_content = json_decode(file_get_contents($json_filename), true);
+            ?>
             <h2>Post Number <?php echo $i + 1; ?></h2>
             <table class="wp-list-table widefat fixed striped">
                 <thead>
@@ -132,15 +114,26 @@ set_transient('dc_generated_content', $generated_content, 60 * 60); // 1 hour
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($fields as $field): ?>
+                    <?php foreach ($json_content['fields'] as $field => $field_data): ?>
                         <tr>
                             <td><?php echo esc_html($field); ?></td>
                             <td>
-                                <?php if ($field == 'post_thumbnail' && isset($generated_content[$i][$field])): ?>
-                                    <img src="<?php echo esc_url($generated_content[$i][$field]); ?>" alt="Generated Image" style="max-width: 100px; height: auto;">
-                                <?php else: ?>
-                                    <?php echo esc_html($generated_content[$i][$field]); ?>
-                                <?php endif; ?>
+                                <?php
+                                switch ($field_data['data_type']) {
+                                    case 'plaintext':
+                                    case 'html':
+                                        echo wp_kses_post($field_data['content']);
+                                        break;
+                                    case 'image':
+                                        if ($field_data['type'] === 'pointer') {
+                                            echo '<img src="' . esc_url($field_data['content']['url']) . '" alt="Generated Image">';
+                                        }
+                                        break;
+                                    default:
+                                        echo esc_html(print_r($field_data['content'], true));
+                                        break;
+                                }
+                                ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

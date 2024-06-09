@@ -6,13 +6,6 @@
       "file": "lorem-text-generator.php",
       "label": "Lorem Ipsum",
       "parameters": {
-        "length": {
-          "type": "select",
-          "label": "Text Length",
-          "class": "text-length",
-          "instructions": "Select the length of the text.",
-          "options": ["short", "medium", "long"]
-        },
         "prefix": {
           "type": "text",
           "label": "Prefix",
@@ -24,6 +17,25 @@
           "label": "Suffix",
           "class": "text-suffix",
           "instructions": "Optional text to add at the end."
+        },
+        "min_words": {
+          "type": "number",
+          "label": "Minimum Words",
+          "class": "min-words",
+          "instructions": "Minimum number of words."
+        },
+        "max_words": {
+          "type": "number",
+          "label": "Maximum Words",
+          "class": "max-words",
+          "instructions": "Maximum number of words."
+        },
+        "format": {
+          "type": "select",
+          "label": "Format",
+          "class": "text-format",
+          "instructions": "Select the format of the text.",
+          "options": ["plaintext", "html"]
         }
       }
     }

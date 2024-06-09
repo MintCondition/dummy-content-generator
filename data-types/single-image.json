@@ -47,6 +47,68 @@
           "depends_on": "choice=Search"
         }
       }
+    },
+    {
+      "class": "PicsumImageGenerator",
+      "file": "picsum-image-generator.php",
+      "label": "Picsum Image",
+      "parameters": {
+        "choice": {
+          "type": "select",
+          "label": "Image Source",
+          "class": "image-source",
+          "instructions": "Choose between random, grayscale, blur, or seed-based images.",
+          "options": ["Random", "Grayscale", "Blur", "Seed"]
+        },
+        "size": {
+          "type": "select",
+          "label": "Image Size",
+          "class": "image-size",
+          "instructions": "Select the size of the image.",
+          "options": [
+            "Small (250x250)",
+            "Medium (800x600)",
+            "Large (1920x1080)",
+            "Custom"
+          ]
+        },
+        "custom_width": {
+          "type": "number",
+          "label": "Custom Width",
+          "class": "custom-width",
+          "instructions": "Enter the custom width.",
+          "depends_on": "size=Custom"
+        },
+        "custom_height": {
+          "type": "number",
+          "label": "Custom Height",
+          "class": "custom-height",
+          "instructions": "Enter the custom height.",
+          "depends_on": "size=Custom"
+        },
+        "seed": {
+          "type": "text",
+          "label": "Seed",
+          "class": "image-seed",
+          "instructions": "Enter a seed for the image.",
+          "depends_on": "choice=Seed"
+        },
+        "blur": {
+          "type": "number",
+          "label": "Blur Level",
+          "class": "blur-level",
+          "instructions": "Enter a blur level (1-10).",
+          "depends_on": "choice=Blur"
+        },
+        "grayscale": {
+          "type": "select",
+          "label": "Grayscale",
+          "class": "grayscale",
+          "instructions": "Apply grayscale filter.",
+          "options": ["No", "Yes"],
+          "depends_on": "choice=Grayscale"
+        }
+      }
     }
   ]
 }
