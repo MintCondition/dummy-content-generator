@@ -9,11 +9,12 @@ $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type'
 $num_posts = isset($_POST['num_posts']) ? intval($_POST['num_posts']) : 1;
 $fields = isset($_POST['fields']) ? $_POST['fields'] : array();
 $data_types = load_data_types();
+$ajax_nonce = wp_create_nonce('create_dummy_content');
 ?>
 
 <div class="wrap">
     <h1>Step 3: Configure Generators</h1>
-    <p>Creating <?php echo $num_posts; ?> <?php echo $post_type; ?></p>
+    <p>Creating <?php echo $num_posts . ' ' . esc_html($post_type) . 's'; ?></p>
 
     <form id="step3-form" method="post" action="">
         <input type="hidden" name="step" value="4">
@@ -58,6 +59,7 @@ $data_types = load_data_types();
 
         <p class="submit">
             <button type="submit" class="button button-primary">Next</button>
+            <button type="button" class="button" id="back-button">Back</button>
         </p>
     </form>
 </div>
@@ -68,49 +70,72 @@ jQuery(document).ready(function($) {
         var dataType = $(this).val();
         var generatorSelect = $('select[name="generators[' + field + ']"]');
         var parametersCell = generatorSelect.closest('tr').find('.parameters-cell');
-        
+
         generatorSelect.empty().append('<option value="">Select Generator</option>').prop('disabled', true);
         parametersCell.empty();
-        
+
         if (dataType) {
-            var generators = <?php echo json_encode($data_types); ?>[dataType]['generators'];
-            $.each(generators, function(index, generator) {
-                generatorSelect.append('<option value="' + generator['class'] + '">' + generator['label'] + '</option>');
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'get_generators',
+                    data_type: dataType,
+                    field: field,
+                    _ajax_nonce: '<?php echo $ajax_nonce; ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $.each(response.data.generators, function(index, generator) {
+                            generatorSelect.append('<option value="' + generator['class'] + '">' + generator['label'] + '</option>');
+                        });
+                        generatorSelect.prop('disabled', false);
+                    } else {
+                        console.error('Failed to fetch generators:', response.data);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX error on get_generators:', textStatus, errorThrown);
+                    console.log('Response text:', jqXHR.responseText);
+                }
             });
-            generatorSelect.prop('disabled', false);
         }
     });
 
     $('.generator-select').on('change', function() {
         var field = $(this).attr('name').match(/\[([^\]]+)\]/)[1];
         var generatorClass = $(this).val();
-        var dataType = $('select[name="data_types[' + field + ']"]').val();
         var parametersCell = $(this).closest('tr').find('.parameters-cell');
-        
+
         parametersCell.empty();
-        
-        if (dataType && generatorClass) {
-            var generators = <?php echo json_encode($data_types); ?>[dataType]['generators'];
-            var generator = generators.find(gen => gen['class'] === generatorClass);
-            if (generator && generator['parameters']) {
-                $.each(generator['parameters'], function(paramKey, param) {
-                    var input;
-                    switch (param['type']) {
-                        case 'select':
-                            input = $('<select>').attr('name', 'parameters[' + field + '][' + paramKey + ']').addClass(param['class']);
-                            $.each(param['options'], function(optionIndex, option) {
-                                input.append($('<option>').attr('value', option).text(option));
-                            });
-                            break;
-                        case 'text':
-                        case 'number':
-                            input = $('<input>').attr('type', param['type']).attr('name', 'parameters[' + field + '][' + paramKey + ']').addClass(param['class']);
-                            break;
+
+        if (generatorClass) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'get_generator_parameters',
+                    generator: generatorClass,
+                    field: field,
+                    _ajax_nonce: '<?php echo $ajax_nonce; ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        parametersCell.html(response.data.parameters_html);
+                    } else {
+                        console.error('Failed to fetch parameters:', response.data);
                     }
-                    parametersCell.append($('<div>').addClass('param').append($('<label>').text(param['label'])).append(input).append($('<p>').text(param['instructions'])));
-                });
-            }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX error on get_generator_parameters:', textStatus, errorThrown);
+                    console.log('Response text:', jqXHR.responseText);
+                }
+            });
         }
+    });
+
+    $('#back-button').on('click', function() {
+        history.back();
     });
 });
 </script>

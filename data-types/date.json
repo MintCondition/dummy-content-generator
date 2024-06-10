@@ -1,0 +1,24 @@
+{
+  "label": "Date",
+  "generators": [
+    {
+      "class": "DateGenerator",
+      "file": "date-generator.php",
+      "label": "Random Date",
+      "parameters": {
+        "start_date": {
+          "type": "date",
+          "label": "Start Date",
+          "class": "start-date",
+          "instructions": "Select the start date for the range."
+        },
+        "end_date": {
+          "type": "date",
+          "label": "End Date",
+          "class": "end-date",
+          "instructions": "Select the end date for the range."
+        }
+      }
+    }
+  ]
+}

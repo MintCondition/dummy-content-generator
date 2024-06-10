@@ -1,13 +1,9 @@
 jQuery(document).ready(function ($) {
-  console.log("Dummy Content Admin Script Loaded");
-
   // Event listener for data type selection change
   $(".data-type-select").on("change", function () {
     var dataType = $(this).val();
     var generatorSelect = $(this).closest("tr").find(".generator-select");
     var parametersCell = $(this).closest("tr").find(".parameters-cell");
-
-    console.log("Data Type Selected:", dataType);
 
     if (dataType) {
       // Enable the generator select
@@ -18,7 +14,6 @@ jQuery(document).ready(function ($) {
         .empty()
         .append('<option value="">Select Generator</option>');
       var generators = dummyContent.data_types[dataType]["generators"];
-      console.log("Available Generators:", generators);
 
       for (var i = 0; i < generators.length; i++) {
         generatorSelect.append(
@@ -50,8 +45,6 @@ jQuery(document).ready(function ($) {
     var dataType = $(this).closest("tr").find(".data-type-select").val();
     var parametersCell = $(this).closest("tr").find(".parameters-cell");
 
-    console.log("Generator Selected:", generatorClass);
-
     if (generatorClass) {
       // Populate the parameters cell with fields
       parametersCell.empty();
@@ -59,7 +52,6 @@ jQuery(document).ready(function ($) {
       var selectedGenerator = generators.find(
         (generator) => generator.class === generatorClass
       );
-      console.log("Selected Generator:", selectedGenerator);
 
       var parameters = selectedGenerator.parameters;
       for (var parameterKey in parameters) {
@@ -92,6 +84,16 @@ jQuery(document).ready(function ($) {
           case "number":
             inputField =
               '<input type="number" name="parameters[' +
+              $(this).closest("tr").find("td:first").text().trim() +
+              "][" +
+              parameterKey +
+              ']" value="' +
+              (parameter.default || "") +
+              '">';
+            break;
+          case "date":
+            inputField =
+              '<input type="date" name="parameters[' +
               $(this).closest("tr").find("td:first").text().trim() +
               "][" +
               parameterKey +

@@ -1,7 +1,6 @@
 <?php
 // File: includes/settings.php
 // TODO: Make this pretty.
-// DONE: Why isn't this saving field settings?
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -11,11 +10,13 @@ class Dummy_Content_Settings_Page {
     public function __construct() {
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_menu', array($this, 'add_settings_page'));
+        add_action('wp_ajax_clear_temp_dir', array($this, 'clear_temp_dir'));
     }
 
     public function register_settings() {
         register_setting('dummy_content_settings', 'dummy_content_fields', array($this, 'sanitize_fields'));
         register_setting('dummy_content_settings', 'dummy_content_temp_dir');
+        register_setting('dummy_content_settings', 'dummy_content_cleanup');
 
         add_settings_section(
             'dummy_content_settings_section',
@@ -28,6 +29,14 @@ class Dummy_Content_Settings_Page {
             'dummy_content_fields',
             __('Post Type Fields', 'text-domain'),
             array($this, 'fields_callback'),
+            'dummy_content_settings',
+            'dummy_content_settings_section'
+        );
+
+        add_settings_field(
+            'dummy_content_cleanup',
+            __('Clean Up After Generation', 'text-domain'),
+            array($this, 'cleanup_callback'),
             'dummy_content_settings',
             'dummy_content_settings_section'
         );
@@ -126,8 +135,34 @@ class Dummy_Content_Settings_Page {
                         $('#submit').click();
                     }
                 });
+
+                $('#clear_temp_dir').on('click', function() {
+                    if (confirm('<?php esc_html_e('Are you sure you want to clear all files from the temporary directory?', 'text-domain'); ?>')) {
+                        $.post(ajaxurl, {
+                            action: 'clear_temp_dir',
+                            _ajax_nonce: '<?php echo wp_create_nonce('clear_temp_dir_nonce'); ?>'
+                        }, function(response) {
+                            if (response.success) {
+                                alert('<?php esc_html_e('Temporary directory cleared successfully.', 'text-domain'); ?>');
+                                location.reload();
+                            } else {
+                                alert('<?php esc_html_e('Failed to clear the temporary directory.', 'text-domain'); ?>');
+                            }
+                        });
+                    }
+                });
             });
         </script>
+        <?php
+    }
+
+    public function cleanup_callback() {
+        $cleanup = get_option('dummy_content_cleanup', true);
+        ?>
+        <label>
+            <input type="checkbox" name="dummy_content_cleanup" value="1" <?php checked($cleanup, true); ?>>
+            <?php esc_html_e('Remove Temp Files on successful post creation', 'text-domain'); ?>
+        </label>
         <?php
     }
 
@@ -147,6 +182,7 @@ class Dummy_Content_Settings_Page {
         <p><?php echo sprintf(__('Number of files: %d', 'text-domain'), esc_html($status['file_count'])); ?></p>
         <p><?php echo sprintf(__('Total size: %d bytes', 'text-domain'), esc_html($status['total_size'])); ?></p>
         <p><?php echo sprintf(__('Is writable: %s', 'text-domain'), esc_html($status['is_writable'] ? __('Yes', 'text-domain') : __('No', 'text-domain'))); ?></p>
+        <button type="button" id="clear_temp_dir"><?php esc_html_e('Clear Temp Directory', 'text-domain'); ?></button>
         <?php
     }
 
@@ -211,6 +247,33 @@ class Dummy_Content_Settings_Page {
             array($this, 'display_page')
         );
     }
+
+    public function clear_temp_dir() {
+        check_ajax_referer('clear_temp_dir_nonce', '_ajax_nonce');
+
+        $temp_dir = dcg_get_temp_directory();
+        $files = glob($temp_dir . '/*'); // Get all file names
+        $json_files_removed = 0;
+        $other_files_removed = 0;
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                if (unlink($file)) { // Delete the file
+                    if (pathinfo($file, PATHINFO_EXTENSION) === 'json') {
+                        $json_files_removed++;
+                    } else {
+                        $other_files_removed++;
+                    }
+                }
+            }
+        }
+
+        wp_send_json_success(array(
+            'json_files_removed' => $json_files_removed,
+            'other_files_removed' => $other_files_removed
+        ));
+    }
 }
 
 new Dummy_Content_Settings_Page();
+?>
