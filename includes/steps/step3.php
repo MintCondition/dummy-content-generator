@@ -58,8 +58,8 @@ $ajax_nonce = wp_create_nonce('create_dummy_content');
         </table>
 
         <p class="submit">
+            <button type="button" class="button" id="back-button">Back</button>    
             <button type="submit" class="button button-primary">Next</button>
-            <button type="button" class="button" id="back-button">Back</button>
         </p>
     </form>
 </div>

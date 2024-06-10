@@ -79,24 +79,37 @@ foreach ($generated_content as $post_data) {
     // Set featured image if available
     if (isset($post_data['fields']['post_thumbnail']['content']['file_path'])) {
         $file_path = $post_data['fields']['post_thumbnail']['content']['file_path'];
-        $image_url = $post_data['fields']['post_thumbnail']['content']['url'];
 
         if ($file_path) {
-            $upload_dir = wp_upload_dir();
-            $attachment = array(
-                'guid' => $upload_dir['url'] . '/' . basename($file_path),
-                'post_mime_type' => 'image/jpeg',
-                'post_title' => preg_replace('/\.[^.]+$/', '', basename($file_path)),
-                'post_content' => '',
-                'post_status' => 'inherit'
+            // Convert the relative path to an absolute path
+            $absolute_path = $temp_dir . '/' . basename($file_path);
+
+            // Simulate an upload of the file to the WordPress media library
+            $file_array = array(
+                'name' => basename($file_path),
+                'tmp_name' => $absolute_path,
             );
 
-            $image_id = wp_insert_attachment($attachment, $file_path, $post_id);
-            require_once(ABSPATH . 'wp-admin/includes/image.php');
-            $attach_data = wp_generate_attachment_metadata($image_id, $file_path);
-            wp_update_attachment_metadata($image_id, $attach_data);
+            // Check for errors and handle the upload
+            $upload = wp_handle_sideload($file_array, array('test_form' => false));
 
-            set_post_thumbnail($post_id, $image_id);
+            if (!isset($upload['error']) && isset($upload['file'])) {
+                $filetype = wp_check_filetype(basename($upload['file']), null);
+                $attachment = array(
+                    'guid' => $upload['url'],
+                    'post_mime_type' => $filetype['type'],
+                    'post_title' => preg_replace('/\.[^.]+$/', '', basename($upload['file'])),
+                    'post_content' => '',
+                    'post_status' => 'inherit'
+                );
+
+                $image_id = wp_insert_attachment($attachment, $upload['file'], $post_id);
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                $attach_data = wp_generate_attachment_metadata($image_id, $upload['file']);
+                wp_update_attachment_metadata($image_id, $attach_data);
+
+                set_post_thumbnail($post_id, $image_id);
+            }
         }
     }
 }
@@ -121,7 +134,6 @@ if ($cleanup) {
 
     // Optionally remove other temp files here, for now assuming other files are not generated
 }
-
 ?>
 
 <div class="wrap">

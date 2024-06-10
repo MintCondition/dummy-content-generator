@@ -9,7 +9,7 @@ class Create_Dummy_Content_Page {
     public function display_page() {
         $step = isset($_POST['step']) ? intval($_POST['step']) : 1;
         error_log("Current Step: $step");
-        error_log(print_r($_POST, true));
+        // error_log(print_r($_POST, true));
 
         if ($step == 2) {
             error_log("Loading Step 2");
