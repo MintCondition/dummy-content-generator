@@ -34,6 +34,9 @@ class Dummy_Content_Testing_Page {
                         case 'image':
                             echo '<div class="dc-payload-image"><img src="' . esc_url($result['content']['url']) . '" alt="Generated Image"></div>';
                             break;
+                        case 'datetime':
+                            echo '<div class="dc-payload-date">' . esc_html($result['content']) . '</div>';
+                            break;
                         default:
                             echo '<div class="dc-payload-unknown">Unknown data type</div>';
                             break;
@@ -69,6 +72,8 @@ class Dummy_Content_Testing_Page {
                                             <input type="text" name="params[<?php echo esc_attr($param_name); ?>]">
                                         <?php elseif ($param['type'] == 'number'): ?>
                                             <input type="number" name="params[<?php echo esc_attr($param_name); ?>]">
+                                        <?php elseif ($param['type'] == 'date'): ?>
+                                            <input type="date" name="params[<?php echo esc_attr($param_name); ?>]">
                                         <?php endif; ?>
                                     </p>
                                 <?php endforeach; ?>

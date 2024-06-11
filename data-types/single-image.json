@@ -2,16 +2,16 @@
   "label": "Single Image",
   "generators": [
     {
-      "class": "UnsplashImageGenerator",
-      "file": "unsplash-image-generator.php",
-      "label": "Unsplash Image",
+      "class": "LoremFlickrImageGenerator",
+      "file": "lorem-flickr-generator.php",
+      "label": "LoremFlickr Image",
       "parameters": {
         "choice": {
           "type": "select",
           "label": "Image Source",
           "class": "image-source",
-          "instructions": "Choose between random or search-based images.",
-          "options": ["Random", "Search"]
+          "instructions": "Choose between random or topic-based images.",
+          "options": ["Random", "Topic"]
         },
         "size": {
           "type": "select",
@@ -39,12 +39,12 @@
           "instructions": "Enter the custom height.",
           "depends_on": "size=Custom"
         },
-        "query": {
+        "topic": {
           "type": "text",
-          "label": "Search Query",
-          "class": "image-query",
-          "instructions": "Enter a search query for the image (leave empty for random images).",
-          "depends_on": "choice=Search"
+          "label": "Topic",
+          "class": "topic",
+          "instructions": "Enter a topic for the image (leave empty for random images).",
+          "depends_on": "choice=Topic"
         }
       }
     },

@@ -64,7 +64,8 @@ for ($i = 0; $i < $num_posts; $i++) {
         $generated_field = generate_content($generator_class, $generator_file, $field_parameters);
         
         if (!is_array($generated_field) || !isset($generated_field['type']) || !isset($generated_field['data_type']) || !isset($generated_field['content'])) {
-            echo '<div class="notice notice-error"><p>Invalid Generator Response format.</p></div>';
+            echo '<div class="notice notice-error"><p>Invalid Generator Response: '. $generated_field .'</p></div>';
+            // error_log('Invalid Generator Response format: ' . print_r($generated_field, true));
             return;
         }
 

@@ -74,6 +74,11 @@ foreach ($generated_content as $post_data) {
             'date' => get_the_date('', $post_id),
             'link' => get_permalink($post_id)
         );
+
+        // Add additional meta data
+        update_post_meta($post_id, 'dcg_create', true);
+        update_post_meta($post_id, 'dcg_create_date', current_time('mysql'));
+        update_post_meta($post_id, 'dcg_create_user', get_current_user_id());
     }
 
     // Set featured image if available

@@ -20,6 +20,15 @@ If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
 
+= 0.7.0 - 2024-06-11 =
+Enhancements:
+- Added a single image generator for LoremFlickr. This one allows you to pick a topic for the images.
+- Added metadata to created posts that allow identification as created by the plugin, the date/time of creation and current user
+
+Fixed: 
+- Fixed testing page not accounting for date type parameters and responses
+
+
 = 0.6.1 - 2024-06-10 =
 
 Enhancements:
