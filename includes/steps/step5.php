@@ -1,5 +1,8 @@
 <?php
 // File: includes/steps/step5.php
+// TODO: Move Post Creation and Logic to a separate file
+// TODO: Add defaults for Author, Date, and Status
+
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly

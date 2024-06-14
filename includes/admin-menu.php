@@ -9,6 +9,7 @@ require_once plugin_dir_path(__FILE__) . 'utils.php';
 require_once plugin_dir_path(__FILE__) . 'create-dummy-content.php';
 require_once plugin_dir_path(__FILE__) . 'settings.php';
 require_once plugin_dir_path(__FILE__) . 'testing.php';
+require_once plugin_dir_path(__FILE__) . 'manage-dummy-content.php';
 
 class Dummy_Content_Admin_Menu {
     public function __construct() {
@@ -98,8 +99,8 @@ class Dummy_Content_Admin_Menu {
     }
 
     public function manage_dummy_content_page() {
-        echo '<h1>Manage Dummy Content</h1>';
-        echo '<p>Here you can manage dummy content.</p>';
+        $manage_page = new Manage_Dummy_Content_Page();
+        $manage_page->display_page();
     }
 
     public function dummy_content_settings_page() {

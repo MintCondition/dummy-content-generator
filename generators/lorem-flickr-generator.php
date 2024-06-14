@@ -1,6 +1,7 @@
 <?php
 // File: generators/lorem-flickr-generator.php
 // Class: LoremFlickrImageGenerator
+// TODO: change case of topic to prevent unexpected results
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly

@@ -17,6 +17,7 @@ class Dummy_Content_Settings_Page {
         register_setting('dummy_content_settings', 'dummy_content_fields', array($this, 'sanitize_fields'));
         register_setting('dummy_content_settings', 'dummy_content_temp_dir');
         register_setting('dummy_content_settings', 'dummy_content_cleanup');
+        register_setting('dummy_content_settings', 'dummy_content_clear_debug', array('default' => 0));
 
         add_settings_section(
             'dummy_content_settings_section',
@@ -53,6 +54,14 @@ class Dummy_Content_Settings_Page {
             'dummy_content_temp_dir_status',
             __('Temporary Directory Status', 'text-domain'),
             array($this, 'temp_dir_status_callback'),
+            'dummy_content_settings',
+            'dummy_content_settings_section'
+        );
+
+        add_settings_field(
+            'dummy_content_clear_debug',
+            __('Enable Clear Debug Log Button', 'text-domain'),
+            array($this, 'clear_debug_callback'),
             'dummy_content_settings',
             'dummy_content_settings_section'
         );
@@ -183,6 +192,16 @@ class Dummy_Content_Settings_Page {
         <p><?php echo sprintf(__('Total size: %d bytes', 'text-domain'), esc_html($status['total_size'])); ?></p>
         <p><?php echo sprintf(__('Is writable: %s', 'text-domain'), esc_html($status['is_writable'] ? __('Yes', 'text-domain') : __('No', 'text-domain'))); ?></p>
         <button type="button" id="clear_temp_dir"><?php esc_html_e('Clear Temp Directory', 'text-domain'); ?></button>
+        <?php
+    }
+
+    public function clear_debug_callback() {
+        $clear_debug = get_option('dummy_content_clear_debug', false);
+        ?>
+        <label>
+            <input type="checkbox" name="dummy_content_clear_debug" value="1" <?php checked($clear_debug, true); ?>>
+            <?php esc_html_e('Enable Clear Debug Log Button', 'text-domain'); ?>
+        </label>
         <?php
     }
 
