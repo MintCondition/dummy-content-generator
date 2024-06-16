@@ -1,16 +1,14 @@
 <?php
-//TODO: Get the hover actions working
-//TODO: Make the list only show dcg_created posts
-//TODO: Add Columns for dcg_create_date and dcg_create_user
-//TODO: remove unneeded columns
-//TODO: make loop and accordion for all post types
-
 if (!class_exists('WP_List_Table')) {
     require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
-class Dummy_Content_List_Table extends WP_List_Table {
-    public function __construct() {
+class Dummy_Content_List_Table extends WP_List_TABLE {
+    private $post_type;
+
+    public function __construct($post_type) {
+        $this->post_type = $post_type;
+
         parent::__construct([
             'singular' => __('Dummy Content', 'sp'),
             'plural'   => __('Dummy Contents', 'sp'),
@@ -75,12 +73,11 @@ class Dummy_Content_List_Table extends WP_List_Table {
     }
 
     public function prepare_items() {
-        // Process bulk actions
         $this->process_bulk_action();
 
         $status = isset($_GET['post_status']) ? $_GET['post_status'] : 'all';
         $query_args = [
-            'post_type'      => 'post',
+            'post_type'      => $this->post_type,
             'meta_key'       => 'dcg_create',
             'meta_value'     => '1',
             'posts_per_page' => -1,
@@ -91,19 +88,6 @@ class Dummy_Content_List_Table extends WP_List_Table {
         }
 
         $query = new WP_Query($query_args);
-
-        error_log('Query Args: ' . print_r($query_args, true));
-        error_log('Found Posts: ' . $query->found_posts);
-
-        // Debug: List all posts and their meta keys
-        $all_posts = get_posts([
-            'post_type'      => 'post',
-            'posts_per_page' => -1,
-        ]);
-        foreach ($all_posts as $post) {
-            $meta = get_post_meta($post->ID);
-            error_log('Post ID: ' . $post->ID . ', Meta: ' . print_r($meta, true));
-        }
 
         $columns  = $this->get_columns();
         $hidden   = [];
@@ -126,14 +110,11 @@ class Dummy_Content_List_Table extends WP_List_Table {
             'trash'     => __('Trash')
         ];
 
-        // Get counts for dummy content posts only
         $status_counts = [
             'all'       => $this->get_dummy_content_count(),
             'publish'   => $this->get_dummy_content_count('publish'),
             'trash'     => $this->get_dummy_content_count('trash')
         ];
-
-        error_log('Status Counts: ' . print_r($status_counts, true));
 
         $current_status = isset($_REQUEST['post_status']) ? $_REQUEST['post_status'] : 'all';
         $views = [];
@@ -146,9 +127,9 @@ class Dummy_Content_List_Table extends WP_List_Table {
         return $views;
     }
 
-    protected function get_dummy_content_count($status = 'all') {
+    public function get_dummy_content_count($status = 'all') {
         $query_args = [
-            'post_type'   => 'post',
+            'post_type'   => $this->post_type,
             'meta_key'    => 'dcg_create',
             'meta_value'  => '1',
             'post_status' => $status === 'all' ? ['publish', 'trash'] : $status
@@ -170,17 +151,13 @@ class Dummy_Content_List_Table extends WP_List_Table {
     }
 
     public function process_bulk_action() {
-        // Rely on WP_List_Table for nonce verification
         $action = $this->current_action();
-        error_log('Current action: ' . $action);
 
         switch ($action) {
             case 'bulk-trash':
             case 'bulk-delete':
                 $post_ids = isset($_POST['post']) ? array_map('absint', $_POST['post']) : [];
                 if (!empty($post_ids)) {
-                    error_log('Processing bulk action: ' . $action);
-                    error_log('Post IDs: ' . implode(', ', $post_ids));
                     handle_bulk_action_posts('', $action, $post_ids);
                 }
                 break;
@@ -234,19 +211,14 @@ class Dummy_Content_List_Table extends WP_List_Table {
 add_filter('handle_bulk_actions-dummy-content_page_manage-dummy-content', 'handle_bulk_action_posts', 10, 3);
 
 function handle_bulk_action_posts($redirect_to, $doaction, $post_ids) {
-    error_log('Handling bulk action: ' . $doaction);
-    error_log('Post IDs: ' . implode(', ', $post_ids));
-    error_log('Redirect to: ' . $redirect_to);
     if ($doaction === 'bulk-trash') {
         foreach ($post_ids as $post_id) {
             wp_trash_post($post_id);
-            error_log('Trashed post ID: ' . $post_id);
         }
         $redirect_to = add_query_arg('bulk_trashed_posts', count($post_ids), $redirect_to);
     } elseif ($doaction === 'bulk-delete') {
         foreach ($post_ids as $post_id) {
             wp_delete_post($post_id, true); // Permanently delete
-            error_log('Deleted post ID: ' . $post_id);
         }
         $redirect_to = add_query_arg('bulk_deleted_posts', count($post_ids), $redirect_to);
     }

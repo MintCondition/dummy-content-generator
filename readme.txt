@@ -4,7 +4,7 @@ Contributors: Brian Wood, Stratifi Creative
 Tags: WordPress, plugin, dummy content
 Requires at least: 5.0
 Tested up to: 6.5.4
-Stable tag: 0.6.1
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,9 +19,11 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
-= 0.7.1 - 2024-06-16 =
+= 0.8.0 - 2024-06-16 =
 New Features: 
--
+-   MANAGE DUMMY CONTENT (With Bulk Actions)
+    - The Manage Dummy Content page works now, showing each post type (that you've created dummy content for). Y
+    You can then delete or trash any or all posts of that type from this list. 
 
 Enhancements:
 - Added generators and data types for Random Name and Fake Email

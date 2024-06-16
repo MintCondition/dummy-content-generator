@@ -3,7 +3,7 @@
 Plugin Name: Stratifi Dummy Content Generator
 Plugin URI: https://github.com/MintCondition/dummy-content-generator
 Description: A plugin to generate dummy content for WordPress.
-Version: 0.6.1
+Version: 0.8.0
 Author: Brian Wood - Stratifi Creative
 License: GPL2
 */
