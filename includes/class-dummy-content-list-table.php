@@ -5,8 +5,6 @@
 //TODO: remove unneeded columns
 //TODO: make loop and accordion for all post types
 
-
-
 if (!class_exists('WP_List_Table')) {
     require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
@@ -22,12 +20,11 @@ class Dummy_Content_List_Table extends WP_List_Table {
 
     public function get_columns() {
         $columns = [
-            'cb'        => '<input type="checkbox" />',
-            'title'     => __('Title'),
-            'author'    => __('Author'),
-            'categories'=> __('Categories'),
-            'tags'      => __('Tags'),
-            'date'      => __('Date')
+            'cb'              => '<input type="checkbox" />',
+            'title'           => __('Title'),
+            'dcg_create_date' => __('DCG Created Date'),
+            'dcg_create_user' => __('DCG Created User'),
+            'date'            => __('Post Date')
         ];
         return $columns;
     }
@@ -39,23 +36,20 @@ class Dummy_Content_List_Table extends WP_List_Table {
     protected function column_title($item) {
         $title = '<strong>' . $item->post_title . '</strong>';
         $actions = [
-            'edit'      => sprintf('<a href="?page=%s&action=%s&post=%s">' . __('Edit') . '</a>', $_REQUEST['page'], 'edit', $item->ID),
+            'edit'      => sprintf('<a href="post.php?post=%s&action=edit">' . __('Edit') . '</a>', $item->ID),
             'delete'    => sprintf('<a href="?page=%s&action=%s&post=%s">' . __('Delete') . '</a>', $_REQUEST['page'], 'delete', $item->ID),
         ];
         return sprintf('%1$s %2$s', $title, $this->row_actions($actions));
     }
 
-    protected function column_author($item) {
-        $author = get_userdata($item->post_author);
-        return $author->display_name;
+    protected function column_dcg_create_date($item) {
+        return get_post_meta($item->ID, 'dcg_create_date', true);
     }
 
-    protected function column_categories($item) {
-        return get_the_category_list(', ', '', $item->ID);
-    }
-
-    protected function column_tags($item) {
-        return get_the_tag_list('', ', ', '', $item->ID);
+    protected function column_dcg_create_user($item) {
+        $user_id = get_post_meta($item->ID, 'dcg_create_user', true);
+        $user = get_userdata($user_id);
+        return $user ? $user->display_name : __('Unknown');
     }
 
     protected function column_date($item) {
@@ -64,16 +58,17 @@ class Dummy_Content_List_Table extends WP_List_Table {
 
     public function get_sortable_columns() {
         $sortable_columns = [
-            'title'    => ['title', true],
-            'author'   => ['author', false],
-            'date'     => ['date', false]
+            'title'           => ['title', true],
+            'dcg_create_date' => ['dcg_create_date', false],
+            'dcg_create_user' => ['dcg_create_user', false],
+            'date'            => ['date', false]
         ];
         return $sortable_columns;
     }
 
     protected function get_bulk_actions() {
         $actions = [
-            'bulk-trash' => 'Move to Trash',
+            'bulk-trash'  => 'Move to Trash',
             'bulk-delete' => 'Delete'
         ];
         return $actions;
@@ -86,6 +81,8 @@ class Dummy_Content_List_Table extends WP_List_Table {
         $status = isset($_GET['post_status']) ? $_GET['post_status'] : 'all';
         $query_args = [
             'post_type'      => 'post',
+            'meta_key'       => 'dcg_create',
+            'meta_value'     => '1',
             'posts_per_page' => -1,
         ];
 
@@ -94,6 +91,19 @@ class Dummy_Content_List_Table extends WP_List_Table {
         }
 
         $query = new WP_Query($query_args);
+
+        error_log('Query Args: ' . print_r($query_args, true));
+        error_log('Found Posts: ' . $query->found_posts);
+
+        // Debug: List all posts and their meta keys
+        $all_posts = get_posts([
+            'post_type'      => 'post',
+            'posts_per_page' => -1,
+        ]);
+        foreach ($all_posts as $post) {
+            $meta = get_post_meta($post->ID);
+            error_log('Post ID: ' . $post->ID . ', Meta: ' . print_r($meta, true));
+        }
 
         $columns  = $this->get_columns();
         $hidden   = [];
@@ -110,20 +120,23 @@ class Dummy_Content_List_Table extends WP_List_Table {
     }
 
     public function get_views() {
-        $status_links = array(
+        $status_links = [
             'all'       => __('All'),
             'publish'   => __('Published'),
             'trash'     => __('Trash')
-        );
+        ];
 
-        $status_counts = array(
-            'all'       => wp_count_posts()->publish + wp_count_posts()->trash,
-            'publish'   => wp_count_posts()->publish,
-            'trash'     => wp_count_posts()->trash
-        );
+        // Get counts for dummy content posts only
+        $status_counts = [
+            'all'       => $this->get_dummy_content_count(),
+            'publish'   => $this->get_dummy_content_count('publish'),
+            'trash'     => $this->get_dummy_content_count('trash')
+        ];
+
+        error_log('Status Counts: ' . print_r($status_counts, true));
 
         $current_status = isset($_REQUEST['post_status']) ? $_REQUEST['post_status'] : 'all';
-        $views = array();
+        $views = [];
 
         foreach ($status_links as $status => $label) {
             $class = ($status == $current_status) ? ' class="current"' : '';
@@ -131,6 +144,19 @@ class Dummy_Content_List_Table extends WP_List_Table {
         }
 
         return $views;
+    }
+
+    protected function get_dummy_content_count($status = 'all') {
+        $query_args = [
+            'post_type'   => 'post',
+            'meta_key'    => 'dcg_create',
+            'meta_value'  => '1',
+            'post_status' => $status === 'all' ? ['publish', 'trash'] : $status
+        ];
+
+        $query = new WP_Query($query_args);
+
+        return $query->found_posts;
     }
 
     public function display() {

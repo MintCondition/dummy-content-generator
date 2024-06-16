@@ -1,7 +1,7 @@
 <?php
 // File: generators/lorem-flickr-generator.php
 // Class: LoremFlickrImageGenerator
-// TODO: change case of topic to prevent unexpected results
+// DONE: change case of topic to prevent unexpected results
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -60,7 +60,7 @@ class LoremFlickrImageGenerator implements DataGeneratorInterface {
         $size = isset($params['size']) ? $params['size'] : 'Medium (800x600)';
         $customWidth = isset($params['custom_width']) ? $params['custom_width'] : null;
         $customHeight = isset($params['custom_height']) ? $params['custom_height'] : null;
-        $topic = isset($params['topic']) && $choice === 'Topic' ? urlencode($params['topic']) : 'random';
+        $topic = isset($params['topic']) && $choice === 'Topic' ? urlencode(strtolower($params['topic'])) : 'random';
 
         $url = 'https://loremflickr.com/';
         $sizeMapping = [

@@ -19,6 +19,12 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
+= 0.7.1 - 2024-06-16 =
+New Features: 
+-
+
+Enhancements:
+- Added generators and data types for Random Name and Fake Email
 
 = 0.7.0 - 2024-06-11 =
 Enhancements:

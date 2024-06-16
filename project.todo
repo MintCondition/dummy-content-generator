@@ -1,5 +1,6 @@
 //TODO Generator for post_author
 //TODO Generator for taxonomies
-//TODO Generator for Names
+//DONE Generator for Names
 //TODO Generator for Places (Cities, States, Countries, Addresses)
 //TODO Generator for ACF Location (Google Map)
+//DONE Generator for fake emails
