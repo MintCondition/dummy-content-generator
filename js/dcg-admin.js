@@ -22,3 +22,31 @@ jQuery(document).ready(function ($) {
     }
   });
 });
+jQuery(document).ready(function ($) {
+  $("#dcg_check_for_updates").on("click", function () {
+    console.log("Button Clicked in dcg-admin.js");
+    $.post(
+      dcgAjax.ajax_url,
+      {
+        action: "dcg_check_for_updates",
+        _ajax_nonce: dcgAjax.nonce,
+      },
+      function (response) {
+        console.log("AJAX Response received");
+        console.log(response);
+        if (response.success) {
+          $("#dcg_update_feedback").text(response.data.message);
+          console.log("Update check completed successfully");
+          //location.reload(); // Reload the page to get updated info
+        } else {
+          $("#dcg_update_feedback").text(dcgAjax.update_failed_message);
+          console.log("Update check failed");
+        }
+      }
+    ).fail(function (jqXHR, textStatus, errorThrown) {
+      console.log("AJAX request failed");
+      console.log("Status: " + textStatus);
+      console.log("Error: " + errorThrown);
+    });
+  });
+});

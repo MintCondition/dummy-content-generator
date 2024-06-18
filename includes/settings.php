@@ -1,10 +1,11 @@
 <?php
 // File: includes/settings.php
-// TODO: Make this pretty.
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
+
+require_once plugin_dir_path(__FILE__) . 'settings-update.php';
 
 class Dummy_Content_Settings_Page {
     public function __construct() {
@@ -253,6 +254,9 @@ class Dummy_Content_Settings_Page {
                 submit_button();
                 ?>
             </form>
+
+            <hr>
+            <?php dcg_display_update_info(); // Display the update info section ?>
         </div>
         <?php
     }
@@ -295,4 +299,16 @@ class Dummy_Content_Settings_Page {
 }
 
 new Dummy_Content_Settings_Page();
-?>
+
+// Enqueue and localize scripts
+function dcg_enqueue_admin_scripts() {
+    wp_enqueue_script('dcg-admin-script', plugin_dir_url(__FILE__) . '../js/dcg-admin.js', array('jquery'), null, true);
+    wp_localize_script('dcg-admin-script', 'dcgAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('dcg_check_for_updates_nonce'),
+        'update_failed_message' => __('Update check failed.', 'text-domain')
+    ));
+}
+add_action('admin_enqueue_scripts', 'dcg_enqueue_admin_scripts');
+
+
