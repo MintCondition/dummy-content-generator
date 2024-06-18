@@ -1,6 +1,15 @@
-//TODO Generator for post_author
-//TODO Generator for taxonomies
-//DONE Generator for Names
-//TODO Generator for Places (Cities, States, Countries, Addresses)
-//TODO Generator for ACF Location (Google Map)
-//DONE Generator for fake emails
+Bugs
+TODO: Get updater working (again)
+TODO: Add settings section for updates
+    TODO: Status of Repo/ Current & latest version / Last Check time / Clear Transient
+    TODO: Force check button 
+
+
+Enhancements
+TODO Generator for post_author
+TODO Generator for taxonomies
+DONE Generator for Names
+TODO Generator for Places (Cities, States, Countries, Addresses)
+TODO Generator for ACF Location (Google Map)
+DONE Generator for fake emails
+TODO Clean up settings page code (move to sub pages)
