@@ -7,6 +7,8 @@ if (!defined('ABSPATH')) {
 function dcg_check_for_updates() {
     error_log('Running dcg_check_for_updates');
     $transient_key = 'dcg_update_check';
+
+    // Only check for updates if the transient is not set
     if (false === get_transient($transient_key)) {
         error_log('Initializing GitHub Updater for check.');
         $updater = new GitHub_Updater('MintCondition', 'dummy-content-generator');
@@ -39,15 +41,24 @@ function dcg_check_for_updates() {
 function dcg_manual_update_check() {
     error_log('Running dcg_manual_update_check');
     $transient_key = 'dcg_update_check';
+
+    // Clear the update_plugins transient to force a re-check
+    error_log('Clearing transients: ' . $transient_key . ' and update_plugins');
     delete_transient($transient_key);
+    delete_site_transient('update_plugins');
+    
+    // Run the update check
+    error_log('Calling dcg_check_for_updates from dcg_manual_update_check');
     dcg_check_for_updates();
 }
+
 
 function dcg_check_for_updates_ajax() {
     error_log('Running dcg_check_for_updates_ajax');
     check_ajax_referer('dcg_check_for_updates_nonce', '_ajax_nonce');
 
-    // Force the update check by clearing the transient
+    // Manually trigger the update check
+    error_log('Calling dcg_manual_update_check from dcg_check_for_updates_ajax');
     dcg_manual_update_check();
 
     // Send success response
@@ -57,8 +68,14 @@ function dcg_check_for_updates_ajax() {
 // Register the AJAX action for checking updates
 add_action('wp_ajax_dcg_check_for_updates', 'dcg_check_for_updates_ajax');
 
-// Add action to check for updates on admin_init
-add_action('admin_init', 'dcg_check_for_updates');
+
+// Register the AJAX action for checking updates
+add_action('wp_ajax_dcg_check_for_updates', 'dcg_check_for_updates_ajax');
+
+// Only add the admin_init action for checking updates if not an AJAX request
+if (!defined('DOING_AJAX') || !DOING_AJAX) {
+    add_action('admin_init', 'dcg_check_for_updates');
+}
 
 // Add the transient data for debug purposes on the plugin update page
 add_filter('pre_set_site_transient_update_plugins', function($transient) {
@@ -77,3 +94,4 @@ function dcg_clear_update_cache() {
     delete_site_transient('update_plugins');
 }
 add_action('admin_init', 'dcg_clear_update_cache');
+?>

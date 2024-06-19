@@ -22,9 +22,16 @@ jQuery(document).ready(function ($) {
     }
   });
 });
+
 jQuery(document).ready(function ($) {
+  let updateCheckInProgress = false;
+
   $("#dcg_check_for_updates").on("click", function () {
+    if (updateCheckInProgress) return;
+
+    updateCheckInProgress = true;
     console.log("Button Clicked in dcg-admin.js");
+
     $.post(
       dcgAjax.ajax_url,
       {
@@ -34,10 +41,12 @@ jQuery(document).ready(function ($) {
       function (response) {
         console.log("AJAX Response received");
         console.log(response);
+        updateCheckInProgress = false;
+
         if (response.success) {
           $("#dcg_update_feedback").text(response.data.message);
           console.log("Update check completed successfully");
-          location.reload(); // Reload the page to get updated info
+          location.reload();
         } else {
           $("#dcg_update_feedback").text(dcgAjax.update_failed_message);
           console.log("Update check failed");
@@ -47,6 +56,7 @@ jQuery(document).ready(function ($) {
       console.log("AJAX request failed");
       console.log("Status: " + textStatus);
       console.log("Error: " + errorThrown);
+      updateCheckInProgress = false;
     });
   });
 });

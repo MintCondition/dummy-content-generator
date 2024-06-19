@@ -11,6 +11,9 @@ if (!class_exists('GitHub_Updater')) {
             error_log("gitHubUsername: $gitHubUsername");
             error_log("gitHubProjectName: $gitHubProjectName");
             error_log("accessToken: $accessToken");
+            
+            // Log the backtrace to see what is calling the constructor
+            error_log("Backtrace: " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true));
 
             $this->username = $gitHubUsername;
             $this->repo = $gitHubProjectName;
@@ -62,7 +65,7 @@ if (!class_exists('GitHub_Updater')) {
             }
 
             // Define plugin file path and slug correctly
-            $plugin_file_path = dirname(plugin_dir_path(__FILE__)) . '/dummy-content-main.php';
+            $plugin_file_path = plugin_dir_path(dirname(__FILE__)) . 'dummy-content-main.php'; // Adjusted to correct path
             error_log("Plugin file path: $plugin_file_path");
             $plugin_basename = plugin_basename($plugin_file_path);
             error_log("Plugin basename: $plugin_basename");
@@ -112,3 +115,4 @@ if (!class_exists('GitHub_Updater')) {
         }
     }
 }
+?>
