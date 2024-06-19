@@ -37,7 +37,7 @@ jQuery(document).ready(function ($) {
         if (response.success) {
           $("#dcg_update_feedback").text(response.data.message);
           console.log("Update check completed successfully");
-          //location.reload(); // Reload the page to get updated info
+          location.reload(); // Reload the page to get updated info
         } else {
           $("#dcg_update_feedback").text(dcgAjax.update_failed_message);
           console.log("Update check failed");
