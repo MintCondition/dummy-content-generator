@@ -84,7 +84,7 @@ if (!class_exists('GitHub_Updater')) {
                 return $transient;
             }
 
-            error_log('Installed version: ' . $installed_version . ', Latest version: ' . $repoInfo->tag_name);
+            //error_log('Installed version: ' . $installed_version . ', Latest version: ' . $repoInfo->tag_name);
 
             if (version_compare($repoInfo->tag_name, $installed_version, '>')) {
                 $plugin = array(
@@ -96,9 +96,9 @@ if (!class_exists('GitHub_Updater')) {
                 );
 
                 $transient->response[$this->plugin_file] = (object)$plugin;
-                error_log('Update available, modifying transient: ' . print_r($plugin, true));
+                //error_log('Update available, modifying transient: ' . print_r($plugin, true));
             } else {
-                error_log('No update available');
+                //error_log('No update available');
             }
 
             return $transient;
