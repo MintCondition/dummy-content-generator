@@ -1,9 +1,9 @@
 Bugs
-TODO: Get updater working (again)
-TODO: Add settings section for updates
-    TODO: Status of Repo/ Current & latest version / Last Check time / Clear Transient
-    TODO: Force check button 
-
+DONE: Get updater working (again)
+DONE: Add settings section for updates
+    DONE: Status of Repo/ Current & latest version / Last Check time / Clear Transient
+    DONE: Force check button 
+TODO: Be sure updater isn't running all the time
 
 Enhancements
 TODO Generator for post_author

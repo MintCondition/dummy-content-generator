@@ -94,7 +94,7 @@ class PicsumImageGenerator implements DataGeneratorInterface {
         }
 
         // Log the generated URL
-        error_log("Generated Picsum URL: $url");
+        // error_log("Generated Picsum URL: $url");
 
         // Save the image to the temp directory
         $image_data = self::fetch_and_save_image($url);
@@ -155,7 +155,7 @@ class PicsumImageGenerator implements DataGeneratorInterface {
         }
 
         // Log the file path
-        error_log("Saved Picsum image to: $file_path");
+        //error_log("Saved Picsum image to: $file_path");
 
         // Return the file path and URL
         $upload_dir = wp_upload_dir();
