@@ -4,16 +4,25 @@ if (!defined('ABSPATH')) {
 }
 
 function dcg_check_for_updates() {
-    $updater = new GitHub_Updater('MintCondition', 'dummy-content-generator');
-    $repoInfo = $updater->getRepositoryInfo();
+    $plugin_file = plugin_basename(DCG_PLUGIN_FILE);
+    $updater = new GitHub_Updater(
+        'MintCondition',
+        'dummy-content-generator',
+        $plugin_file
+    );
+    $github_data = $updater->get_repository_info();
 
-    if ($repoInfo) {
-        $latest_version = $repoInfo->tag_name;
+    if ($github_data) {
+        $latest_version = $github_data->tag_name;
         set_transient('dcg_latest_version', $latest_version, DAY_IN_SECONDS);
         set_transient('dcg_last_update_check', current_time('mysql'), DAY_IN_SECONDS);
+
+        // Force WordPress to check for updates
+        delete_site_transient('update_plugins');
+        wp_update_plugins();
     }
 
-    return $repoInfo;
+    return $github_data;
 }
 
 function dcg_manual_update_check() {
@@ -48,9 +57,16 @@ if (!wp_next_scheduled('dcg_daily_update_check')) {
 
 add_action('dcg_daily_update_check', 'dcg_check_for_updates');
 
-add_action('admin_init', 'dcg_debug_transient');
-
+// Debug function to log the current update_plugins transient
 function dcg_debug_transient() {
     $transient = get_site_transient('update_plugins');
     error_log('Current update_plugins transient: ' . print_r($transient, true));
 }
+add_action('admin_init', 'dcg_debug_transient');
+
+// Force update check on every page load (remove after testing)
+function dcg_force_update_check() {
+    delete_site_transient('update_plugins');
+    wp_update_plugins();
+}
+add_action('admin_init', 'dcg_force_update_check');

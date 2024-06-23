@@ -15,6 +15,12 @@ if (!defined('ABSPATH')) {
 // Define the plugin URL
 define('DC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
+define('DCG_PLUGIN_FILE', __FILE__);
+
+
+
+
+
 // Include necessary files
 require_once plugin_dir_path(__FILE__) . 'includes/admin-menu.php';
 require_once plugin_dir_path(__FILE__) . 'includes/utils.php';
@@ -33,13 +39,10 @@ if (!wp_next_scheduled('dcg_daily_update_check')) {
 
 add_action('dcg_daily_update_check', 'dcg_check_for_updates');
 
-add_action('plugins_loaded', 'dcg_initialize_updater');
 
-function dcg_initialize_updater() {
-    if (class_exists('GitHub_Updater')) {
-        $updater = new GitHub_Updater('MintCondition', 'dummy-content-generator');
-        add_filter('pre_set_site_transient_update_plugins', array($updater, 'setTransient'));
-    } else {
-        error_log('GitHub_Updater class not found');
-    }
-}
+// Near the top of the file, after defining DCG_PLUGIN_FILE
+$updater = new GitHub_Updater(
+    'MintCondition',
+    'dummy-content-generator',
+    plugin_basename(DCG_PLUGIN_FILE)
+);
