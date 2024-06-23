@@ -14,7 +14,46 @@ if (!class_exists('GitHub_Updater')) {
 
             add_filter("pre_set_site_transient_update_plugins", array($this, "setTransient"));
         }
+        public function check_update($transient) {
+        if (empty($transient->checked)) {
+            return $transient;
+        }
 
+        $this->github_response = $this->get_repository_info();
+
+        if ($this->github_response && version_compare($this->github_response->tag_name, $this->plugin_data['Version'], '>')) {
+            $plugin_info = array(
+                'slug' => dirname($this->plugin_file),
+                'plugin' => $this->plugin_file,
+                'new_version' => $this->github_response->tag_name,
+                'url' => $this->plugin_data['PluginURI'],
+                'package' => $this->github_response->zipball_url,
+            );
+            $transient->response[$this->plugin_file] = (object) $plugin_info;
+        }
+
+        return $transient;
+    }
+
+    // Add this new method
+    public function after_update($upgrader_object, $options) {
+        if ($options['action'] == 'update' && $options['type'] == 'plugin') {
+            // Get the current plugin directory name
+            $current_plugin_dir = dirname($this->plugin_file);
+
+            // Check if our plugin was updated
+            if (isset($options['plugins']) && in_array($this->plugin_file, $options['plugins'])) {
+                // Get the temporary update directory
+                $temp_dir = $upgrader_object->skin->result['destination'];
+
+                // Check if the temporary directory exists and is different from our plugin directory
+                if ($temp_dir && $temp_dir != WP_PLUGIN_DIR . '/' . $current_plugin_dir) {
+                    // Move the files from the temporary directory to our plugin directory
+                    rename($temp_dir, WP_PLUGIN_DIR . '/' . $current_plugin_dir);
+                }
+            }
+        }
+    }
         public function getRepositoryInfo() {
             $url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases/latest";
             if (!empty($this->accessToken)) {

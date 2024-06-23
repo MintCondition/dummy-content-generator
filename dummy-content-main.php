@@ -46,3 +46,6 @@ $updater = new GitHub_Updater(
     'dummy-content-generator',
     plugin_basename(DCG_PLUGIN_FILE)
 );
+
+// After initializing the updater
+add_action('upgrader_process_complete', array($updater, 'after_update'), 10, 2);

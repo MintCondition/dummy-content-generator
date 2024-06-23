@@ -19,6 +19,9 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
+= 0.8.1 - 2024-06-23 = Update working?
+- Checking to see if updater working.
+
 = 0.8.0 - 2024-06-16 =
 New Features: 
 -   MANAGE DUMMY CONTENT (With Bulk Actions)
