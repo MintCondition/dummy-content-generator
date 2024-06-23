@@ -1,97 +1,56 @@
 <?php
-
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
 function dcg_check_for_updates() {
-    error_log('Running dcg_check_for_updates');
-    $transient_key = 'dcg_update_check';
+    $updater = new GitHub_Updater('MintCondition', 'dummy-content-generator');
+    $repoInfo = $updater->getRepositoryInfo();
 
-    // Only check for updates if the transient is not set
-    if (false === get_transient($transient_key)) {
-        error_log('Initializing GitHub Updater for check.');
-        $updater = new GitHub_Updater('MintCondition', 'dummy-content-generator');
-
-        // Force the transient update to check for new versions
-        $transient = get_site_transient('update_plugins');
-        $transient = $updater->setTransient($transient);
-        set_site_transient('update_plugins', $transient);
-
-        // Fetch repository info
-        $githubAPIResult = $updater->getRepositoryInfo();
-
-        if (is_wp_error($githubAPIResult)) {
-            error_log('Error fetching repository info: ' . $githubAPIResult->get_error_message());
-            return;
-        }
-
-        $latest_version = isset($githubAPIResult->tag_name) ? $githubAPIResult->tag_name : 'Unknown';
+    if ($repoInfo) {
+        $latest_version = $repoInfo->tag_name;
         set_transient('dcg_latest_version', $latest_version, DAY_IN_SECONDS);
-        set_transient($transient_key, true, DAY_IN_SECONDS);
-        set_transient('dcg_last_update_check', current_time('mysql'), DAY_IN_SECONDS); // Set the last update check time
+        set_transient('dcg_last_update_check', current_time('mysql'), DAY_IN_SECONDS);
+    }
 
-        error_log("Update check completed. Latest version: $latest_version");
+    return $repoInfo;
+}
+
+function dcg_manual_update_check() {
+    delete_transient('dcg_latest_version');
+    delete_transient('dcg_last_update_check');
+    delete_site_transient('update_plugins');
+    
+    return dcg_check_for_updates();
+}
+
+function dcg_check_for_updates_ajax() {
+    check_ajax_referer('dcg_check_for_updates_nonce', '_ajax_nonce');
+
+    $result = dcg_manual_update_check();
+
+    if ($result) {
+        wp_send_json_success(array(
+            'message' => __('Update check completed.', 'text-domain'),
+            'latest_version' => get_transient('dcg_latest_version'),
+            'last_check' => get_transient('dcg_last_update_check')
+        ));
     } else {
-        error_log('Update check skipped as transient is already set.');
+        wp_send_json_error(array('message' => __('Failed to check for updates.', 'text-domain')));
     }
 }
 
-// Function to manually flush the update transient and force an update check
-function dcg_manual_update_check() {
-    error_log('Running dcg_manual_update_check');
-    $transient_key = 'dcg_update_check';
-
-    // Clear the update_plugins transient to force a re-check
-    error_log('Clearing transients: ' . $transient_key . ' and update_plugins');
-    delete_transient($transient_key);
-    delete_site_transient('update_plugins');
-    
-    // Run the update check
-    error_log('Calling dcg_check_for_updates from dcg_manual_update_check');
-    dcg_check_for_updates();
-}
-
-
-function dcg_check_for_updates_ajax() {
-    error_log('Running dcg_check_for_updates_ajax');
-    check_ajax_referer('dcg_check_for_updates_nonce', '_ajax_nonce');
-
-    // Manually trigger the update check
-    error_log('Calling dcg_manual_update_check from dcg_check_for_updates_ajax');
-    dcg_manual_update_check();
-
-    // Send success response
-    wp_send_json_success(array('message' => __('Update check completed.', 'text-domain')));
-}
-
-// Register the AJAX action for checking updates
 add_action('wp_ajax_dcg_check_for_updates', 'dcg_check_for_updates_ajax');
 
-
-// Register the AJAX action for checking updates
-add_action('wp_ajax_dcg_check_for_updates', 'dcg_check_for_updates_ajax');
-
-// Only add the admin_init action for checking updates if not an AJAX request
-if (!defined('DOING_AJAX') || !DOING_AJAX) {
-    add_action('admin_init', 'dcg_check_for_updates');
+if (!wp_next_scheduled('dcg_daily_update_check')) {
+    wp_schedule_event(time(), 'daily', 'dcg_daily_update_check');
 }
 
-// Add the transient data for debug purposes on the plugin update page
-add_filter('pre_set_site_transient_update_plugins', function($transient) {
-    error_log('pre_set_site_transient_update_plugins: ' . print_r($transient, true));
-    return $transient;
-});
+add_action('dcg_daily_update_check', 'dcg_check_for_updates');
 
-// Debug log for checking update_plugins transient when the update page is loaded
-add_action('load-update-core.php', function() {
+add_action('admin_init', 'dcg_debug_transient');
+
+function dcg_debug_transient() {
     $transient = get_site_transient('update_plugins');
-    error_log('Loaded update_plugins transient: ' . print_r($transient, true));
-});
-
-function dcg_clear_update_cache() {
-    error_log('Clearing update cache');
-    delete_site_transient('update_plugins');
+    error_log('Current update_plugins transient: ' . print_r($transient, true));
 }
-add_action('admin_init', 'dcg_clear_update_cache');
-?>

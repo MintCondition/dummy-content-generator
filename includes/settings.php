@@ -257,6 +257,8 @@ class Dummy_Content_Settings_Page {
 
             <hr>
             <?php dcg_display_update_info(); // Display the update info section ?>
+            <hr>
+            
         </div>
         <?php
     }
@@ -301,7 +303,11 @@ class Dummy_Content_Settings_Page {
 new Dummy_Content_Settings_Page();
 
 // Enqueue and localize scripts
-function dcg_enqueue_admin_scripts() {
+
+function dcg_enqueue_admin_scripts($hook) {
+    if ($hook != 'settings_page_dummy-content-settings') {
+        return;
+    }
     wp_enqueue_script('dcg-admin-script', plugin_dir_url(__FILE__) . '../js/dcg-admin.js', array('jquery'), null, true);
     wp_localize_script('dcg-admin-script', 'dcgAjax', array(
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -310,5 +316,4 @@ function dcg_enqueue_admin_scripts() {
     ));
 }
 add_action('admin_enqueue_scripts', 'dcg_enqueue_admin_scripts');
-
 

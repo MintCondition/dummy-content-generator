@@ -1,118 +1,63 @@
 <?php
 if (!class_exists('GitHub_Updater')) {
-
     class GitHub_Updater {
         private $username;
         private $repo;
         private $accessToken;
 
         function __construct($gitHubUsername, $gitHubProjectName, $accessToken = '') {
-            error_log("GitHub_Updater constructor called");
-            error_log("gitHubUsername: $gitHubUsername");
-            error_log("gitHubProjectName: $gitHubProjectName");
-            error_log("accessToken: $accessToken");
-            
-            // Log the backtrace to see what is calling the constructor
-            error_log("Backtrace: " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true));
-
             $this->username = $gitHubUsername;
             $this->repo = $gitHubProjectName;
             $this->accessToken = $accessToken;
 
-            // Add filters
             add_filter("pre_set_site_transient_update_plugins", array($this, "setTransient"));
         }
 
         public function getRepositoryInfo() {
-            $url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases";
+            $url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases/latest";
             if (!empty($this->accessToken)) {
                 $url = add_query_arg(array('access_token' => $this->accessToken), $url);
             }
 
-            error_log("Fetching repository info from URL: $url");
             $response = wp_remote_get($url);
-            $githubAPIResult = wp_remote_retrieve_body($response);
-
             if (is_wp_error($response)) {
-                error_log("Error fetching repository info: " . $response->get_error_message());
-                return new WP_Error('api_error', $response->get_error_message());
+                return false;
             }
 
-            error_log("Repo info retrieved successfully");
-            $githubAPIResult = @json_decode($githubAPIResult);
-            if (is_array($githubAPIResult)) {
-                $githubAPIResult = $githubAPIResult[0];
-            }
-
-            error_log("Decoded GitHub API Result: " . print_r($githubAPIResult, true));
-            return $githubAPIResult;
+            $responseBody = wp_remote_retrieve_body($response);
+            return json_decode($responseBody);
         }
 
-        public function setTransient($transient) {
-            error_log('Running setTransient');
+            public function setTransient($transient) {
+        if (!is_object($transient)) {
+            $transient = new stdClass();
+        }
 
-            // Ensure transient is an object
-            if (!is_object($transient)) {
-                $transient = new stdClass();
-            }
+        $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . plugin_basename(__DIR__ . '/../dummy-content-main.php'));
+        $plugin_slug = plugin_basename(__DIR__ . '/../dummy-content-main.php');
+        $installed_version = $plugin_data['Version'];
 
-            // Fetch repository info
-            $githubAPIResult = $this->getRepositoryInfo();
-
-            if (is_wp_error($githubAPIResult)) {
-                error_log('Error fetching repository info: ' . $githubAPIResult->get_error_message());
-                return $transient;
-            }
-
-            // Define plugin file path and slug correctly
-            $plugin_file_path = plugin_dir_path(dirname(__FILE__)) . 'dummy-content-main.php'; // Adjusted to correct path
-            error_log("Plugin file path: $plugin_file_path");
-            $plugin_basename = plugin_basename($plugin_file_path);
-            error_log("Plugin basename: $plugin_basename");
-
-            // Get plugin data and log it
-            $plugin_data = get_plugin_data($plugin_file_path);
-            error_log("Plugin data: " . print_r($plugin_data, true));
-
-            if (empty($plugin_data)) {
-                error_log("Failed to retrieve plugin data.");
-                return $transient;
-            }
-
-            if (empty($plugin_data['Version']) || empty($plugin_data['PluginURI']) || empty($plugin_data['Name'])) {
-                error_log("Incomplete plugin data. Version: {$plugin_data['Version']}, PluginURI: {$plugin_data['PluginURI']}, Name: {$plugin_data['Name']}");
-                return $transient;
-            }
-
-            $installed_version = isset($plugin_data['Version']) ? $plugin_data['Version'] : '0.0.0';
-            error_log("Installed version: $installed_version");
-
-            if (version_compare($githubAPIResult->tag_name, $installed_version, '>')) {
-                $plugin = array(
-                    'slug' => dirname($plugin_basename),
-                    'plugin' => $plugin_basename,
-                    'new_version' => $githubAPIResult->tag_name,
-                    'url' => $plugin_data['PluginURI'],
-                    'package' => $githubAPIResult->zipball_url,
-                );
-
-                if (!empty($this->accessToken)) {
-                    $plugin['package'] = add_query_arg(array('access_token' => $this->accessToken), $plugin['package']);
-                }
-
-                if (!isset($transient->response)) {
-                    $transient->response = array();
-                }
-
-                $transient->response[$plugin_basename] = (object)$plugin;
-
-                error_log("Update available: " . print_r($plugin, true));
-            } else {
-                error_log("No update needed");
-            }
-
+        $repoInfo = $this->getRepositoryInfo();
+        if ($repoInfo === false) {
             return $transient;
         }
+
+        if (version_compare($repoInfo->tag_name, $installed_version, '>')) {
+            $plugin = array(
+                'slug' => dirname($plugin_slug),
+                'plugin' => $plugin_slug,
+                'new_version' => $repoInfo->tag_name,
+                'url' => $plugin_data['PluginURI'],
+                'package' => $repoInfo->zipball_url,
+            );
+    
+            $transient->response[$plugin_slug] = (object)$plugin;
+            error_log('Update available, modifying transient: ' . print_r($plugin, true));
+        } else {
+            error_log('No update available. Installed version: ' . $installed_version . ', Latest version: ' . $repoInfo->tag_name);
+        }
+
+        return $transient;
     }
+        }
 }
-?>
