@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-function dcg_check_for_updates() {
+function dcg_check_for_updates() { 
     $plugin_file = plugin_basename(DCG_PLUGIN_FILE);
     $updater = new GitHub_Updater(
         'MintCondition',
