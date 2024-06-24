@@ -53,7 +53,7 @@ if (!class_exists('GitHub_Updater')) {
                 }
             }
         }
-    }
+    } 
         public function getRepositoryInfo() {
             $url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases/latest";
             if (!empty($this->accessToken)) {
