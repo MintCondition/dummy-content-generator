@@ -10,7 +10,7 @@ function dcg_check_for_updates() {
         'dummy-content-generator',
         $plugin_file
     );
-    $github_data = $updater->get_repository_info();
+    $github_data = $updater->getRepositoryInfo();
 
     if ($github_data) {
         $latest_version = $github_data->tag_name;
@@ -60,7 +60,7 @@ add_action('dcg_daily_update_check', 'dcg_check_for_updates');
 // Debug function to log the current update_plugins transient
 function dcg_debug_transient() {
     $transient = get_site_transient('update_plugins');
-    error_log('Current update_plugins transient: ' . print_r($transient, true));
+    //error_log('Current update_plugins transient: ' . print_r($transient, true));
 }
 add_action('admin_init', 'dcg_debug_transient');
 
