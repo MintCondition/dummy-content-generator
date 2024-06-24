@@ -4,7 +4,7 @@ Contributors: Brian Wood, Stratifi Creative
 Tags: WordPress, plugin, dummy content
 Requires at least: 5.0
 Tested up to: 6.5.4
-Stable tag: 0.8.2
+Stable tag: 0.8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ meta-data.
 If you can't figure out how to install a WP Plugin, you should NOT use this one.
 
 == Changelog ==
-== 0.8.5 2024-06-23 = BugFix and Cleanup release
+== 0.8.3 2024-06-23 = BugFix and Cleanup release
 Fixed: 
 - Updater working (May need reinstall)
 - Error logging reduced to only failures
