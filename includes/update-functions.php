@@ -10,7 +10,7 @@ function dcg_check_for_updates() {
         'dummy-content-generator',
         $plugin_file
     );
-    $github_data = $updater->get_repository_info();
+    $github_data = $updater->getRepositoryInfo();
 
     if ($github_data) {
         $latest_version = $github_data->tag_name;
